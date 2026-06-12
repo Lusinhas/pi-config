@@ -1,0 +1,15 @@
+{
+  "strategy": "supersede",
+  "dropOverBytes": 20480,
+  "keepRecentTokens": 20000,
+  "preemptPct": 85,
+  "promotePct": 90,
+  "shakeOverBytes": 10240,
+  "handoffPath": ".pi/handoff.md",
+  "handoffChars": 60000,
+  "handoffMaxTokens": 4096,
+  "promotion": {
+    "enabled": true,
+    "ladder": []
+  }
+}

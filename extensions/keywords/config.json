@@ -1,0 +1,15 @@
+{
+  "keywords": {
+    "ultrathink": "xhigh",
+    "think harder": "high",
+    "think ultra": "high",
+    "quickthink": "low"
+  },
+  "orchestrate": true,
+  "ultrawork": true,
+  "adaptive": false,
+  "adaptiveMin": "low",
+  "adaptiveMax": "high",
+  "restore": true,
+  "metMarker": "<goal-met/>"
+}

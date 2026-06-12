@@ -1,0 +1,19 @@
+{
+  "shell": "",
+  "widget": true,
+  "widgetLimit": 6,
+  "sandbox": {
+    "enabled": false,
+    "mode": "loose",
+    "network": "full",
+    "writePaths": [],
+    "escape": true
+  },
+  "jobs": {
+    "autoBackgroundMs": 30000,
+    "capBytes": 2097152,
+    "defaultWaitSec": 30,
+    "keepFinished": 20,
+    "notify": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "compat": true,
+  "defaultMode": "hashline",
+  "modes": {},
+  "maxLines": 2000,
+  "maxBytes": 51200,
+  "maxLineLength": 2000,
+  "contextLines": 2
+}

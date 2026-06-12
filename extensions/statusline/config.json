@@ -1,0 +1,20 @@
+{
+  "order": ["model", "mode", "role", "git", "context", "usage", "todos", "cwd", "clock"],
+  "separator": " │ ",
+  "segments": {
+    "model": { "enabled": true },
+    "mode": { "enabled": true },
+    "role": { "enabled": true },
+    "git": { "enabled": true },
+    "context": { "enabled": true },
+    "usage": { "enabled": true },
+    "todos": { "enabled": true },
+    "cwd": { "enabled": true },
+    "clock": { "enabled": true }
+  },
+  "gitIntervalMs": 5000,
+  "gitTimeoutMs": 3000,
+  "refreshMs": 30000,
+  "warnPercent": 80,
+  "errorPercent": 95
+}

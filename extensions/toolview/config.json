@@ -1,0 +1,6 @@
+{
+  "maxLines": 12,
+  "maxLineChars": 160,
+  "compactChars": 100,
+  "viewportLines": 16
+}

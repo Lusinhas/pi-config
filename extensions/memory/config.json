@@ -1,0 +1,10 @@
+{
+  "injectBudget": 2000,
+  "consolidateEvery": 0,
+  "consolidateOnQuit": true,
+  "model": "",
+  "maxFacts": 3,
+  "recallBudget": 6000,
+  "maxTopicBytes": 65536,
+  "transcriptBudget": 12000
+}

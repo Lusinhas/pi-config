@@ -1,0 +1,35 @@
+{
+  "mode": "block",
+  "maxFindings": 10,
+  "allowMarker": "@allow-comment",
+  "ignore": [
+    "**/vendor/**",
+    "**/vendored/**",
+    "**/node_modules/**",
+    "**/third_party/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/out/**",
+    "**/target/**",
+    "**/.next/**",
+    "**/coverage/**",
+    "**/__generated__/**",
+    "**/*.gen.*",
+    "**/*.generated.*",
+    "**/*_generated.*",
+    "**/*.min.js",
+    "**/*.min.css",
+    "**/*.md",
+    "**/*.markdown",
+    "**/*.mdx",
+    "**/*.lock",
+    "**/package-lock.json"
+  ],
+  "detectors": {
+    "narration": true,
+    "fillerdoc": true,
+    "changemarker": true,
+    "todo": true,
+    "separator": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "spillBytes": 30720,
+  "headLines": 40,
+  "tailLines": 20,
+  "skipTools": ["artifact"],
+  "maxAgeDays": 7,
+  "retrieveLines": 200
+}

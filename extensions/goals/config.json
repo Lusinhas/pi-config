@@ -1,0 +1,10 @@
+{
+  "judgeModel": "anthropic/claude-haiku-4-5",
+  "judgeTimeoutMs": 30000,
+  "judgeMaxChars": 8000,
+  "metMarker": "<goal-met/>",
+  "maxIterations": 25,
+  "enforceTodos": false,
+  "loopMinIntervalMs": 5000,
+  "statusMaxChars": 48
+}

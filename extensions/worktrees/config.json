@@ -1,0 +1,11 @@
+{
+  "dir": ".worktrees",
+  "branchPrefix": "wt/",
+  "includeFile": ".worktreeinclude",
+  "defaultRef": "HEAD",
+  "allowSpawn": false,
+  "spawnCommand": "pi",
+  "confirmRemove": true,
+  "maxIncludeFiles": 500,
+  "gitTimeoutMs": 30000
+}

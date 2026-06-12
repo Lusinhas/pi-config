@@ -1,0 +1,17 @@
+{
+  "readonlyTools": ["read", "grep", "find", "ls"],
+  "extraAllowed": ["websearch", "webfetch", "astsearch", "history", "task", "advisor"],
+  "blockedTools": ["write", "edit", "bash"],
+  "systemPrompt": "You are in plan mode. Explore the codebase and design an approach, but do not modify files, create files, or run anything that changes the workspace. Work only with the read-only tools currently available. Finish your response by presenting a concrete implementation plan as a numbered list under a 'Plan' heading, then stop and wait for approval.",
+  "blockReason": "Plan mode is active: this tool can modify the workspace and is blocked. Keep exploring with read-only tools and finish by presenting a plan.",
+  "statusText": "plan",
+  "showWidget": true,
+  "approveMessage": "The plan you presented has been approved. Plan mode is off and full tool access is restored. Implement the approved plan now, following its steps in order.",
+  "refinePrefix": "The plan needs revision before approval. Stay in plan mode, do not modify files, and present an updated plan that addresses this feedback: ",
+  "review": {
+    "enabled": true,
+    "timeoutMs": 120000,
+    "minLength": 80,
+    "keywords": ["plan"]
+  }
+}

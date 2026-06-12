@@ -1,0 +1,12 @@
+{
+  "formats": {
+    "pi": true,
+    "claude": true,
+    "cursor": true,
+    "copilot": true,
+    "windsurf": true,
+    "cline": true
+  },
+  "alwaysBudget": 8000,
+  "scopedBudget": 6000
+}

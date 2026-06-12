@@ -1,0 +1,52 @@
+{
+  "roles": {
+    "default": "claude-opus-4-8",
+    "smol": "claude-haiku-4-5",
+    "plan": {
+      "model": "claude-opus-4-8",
+      "thinking": "high"
+    },
+    "commit": {
+      "model": "claude-haiku-4-5",
+      "thinking": "off"
+    },
+    "review": {
+      "model": "claude-opus-4-8",
+      "thinking": "medium"
+    }
+  },
+  "fallback": {
+    "enabled": true,
+    "threshold": 2,
+    "failWindowSec": 120,
+    "restoreAfterMin": 10,
+    "chains": {
+      "claude-opus": [
+        "claude-sonnet-4-6",
+        "claude-haiku-4-5"
+      ],
+      "claude-sonnet": [
+        "claude-haiku-4-5"
+      ]
+    }
+  },
+  "profiles": {
+    "deep": {
+      "model": "claude-opus-4-8",
+      "thinking": "xhigh"
+    },
+    "fast": {
+      "model": "claude-haiku-4-5",
+      "thinking": "off"
+    },
+    "readonly": {
+      "tools": [
+        "read",
+        "grep",
+        "find",
+        "ls"
+      ]
+    }
+  },
+  "maxBudgetTokens": 100000
+}

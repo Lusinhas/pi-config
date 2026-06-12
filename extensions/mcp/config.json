@@ -1,0 +1,14 @@
+{
+  "servers": {},
+  "lazy": true,
+  "outputLimit": 25600,
+  "inlineLimit": 8192,
+  "requestTimeoutMs": 60000,
+  "startTimeoutMs": 20000,
+  "idleMs": 300000,
+  "authTimeoutMs": 300000,
+  "skillDirs": ["../../skills"],
+  "maxScanDepth": 6,
+  "stderrLines": 20,
+  "framing": "ndjson"
+}

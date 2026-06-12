@@ -1,0 +1,15 @@
+{
+  "maxConcurrent": 4,
+  "maxDepth": 2,
+  "maxTurns": 32,
+  "maxTokens": 0,
+  "advisorModel": "",
+  "advisorThinking": "xhigh",
+  "advisorContextChars": 60000,
+  "widget": true,
+  "widgetLimit": 4,
+  "transcriptLimit": 60,
+  "activityChars": 100,
+  "keepFinished": 20,
+  "teams": {}
+}
