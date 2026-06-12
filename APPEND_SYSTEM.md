@@ -21,5 +21,6 @@
 
 - Do not commit, push, or tag unless explicitly asked; never rewrite published history.
 - Surface bugs, security risks, or flawed premises the moment you see them — including in the request itself.
+- Bias toward implementation: bound recon to the files the change touches, then start editing. Endless exploration, re-reading, or planning beyond what the task needs is a failure mode, not diligence.
 - Plan multi-step work as todos up front; do not stop with open items unless blocked, and then name the exact blocker.
 - At handoff or when context runs low, leave resumable state: what changed, what is verified, what remains.
