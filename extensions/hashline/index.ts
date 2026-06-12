@@ -122,9 +122,9 @@ function loadConfig(): HashlineConfig {
   } catch {
     merged = { ...DEFAULTS };
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.hashline)) merged = deepMerge(merged, globalConfig.hashline);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.hashline)) merged = deepMerge(merged, projectConfig.hashline);
   const modes: Record<string, HashMode> = {};
   if (isRecord(merged.modes)) {

@@ -105,7 +105,7 @@ function loadConfig(): PlanConfig {
   } catch {
     merged = {}
   }
-  const overridePaths = [join(homedir(), ".pi", "agent", "piconfig.json"), join(process.cwd(), ".pi", "piconfig.json")]
+  const overridePaths = [join(homedir(), ".pi", "agent", "suite.json"), join(process.cwd(), ".pi", "suite.json")]
   for (const path of overridePaths) {
     try {
       const parsed: unknown = JSON.parse(readFileSync(path, "utf8"))

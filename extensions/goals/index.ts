@@ -79,7 +79,7 @@ function loadConfig(): GoalsConfig {
   if (isRecord(shipped)) {
     merged = deepMerge(merged, shipped);
   }
-  const overridePaths = [join(homedir(), ".pi", "agent", "piconfig.json"), join(process.cwd(), ".pi", "piconfig.json")];
+  const overridePaths = [join(homedir(), ".pi", "agent", "suite.json"), join(process.cwd(), ".pi", "suite.json")];
   for (const path of overridePaths) {
     const parsed = readJson(path);
     if (isRecord(parsed) && isRecord(parsed.goals)) {

@@ -91,9 +91,9 @@ function loadConfig(): McpExtensionConfig {
   } catch {
     merged = { ...DEFAULTS };
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.mcp)) merged = deepMerge(merged, globalConfig.mcp);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.mcp)) merged = deepMerge(merged, projectConfig.mcp);
   return {
     servers: isRecord(merged.servers) ? merged.servers : {},
@@ -129,7 +129,7 @@ function formatServer(server: ManagedServer): string {
 
 function formatServerList(servers: ManagedServer[]): string {
   if (servers.length === 0) {
-    return "No MCP servers configured. Add entries under mcp.servers in piconfig.json, to .mcp.json, or to a skill's mcp frontmatter.";
+    return "No MCP servers configured. Add entries under mcp.servers in suite.json, to .mcp.json, or to a skill's mcp frontmatter.";
   }
   return ["MCP servers:", ...servers.map((server) => formatServer(server))].join("\n");
 }

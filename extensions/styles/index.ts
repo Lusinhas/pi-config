@@ -89,9 +89,9 @@ function loadConfig(): StylesConfig {
   } catch {
     merged = { ...DEFAULTS };
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.styles)) merged = deepMerge(merged, globalConfig.styles);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.styles)) merged = deepMerge(merged, projectConfig.styles);
   return {
     active: coerceName(merged.active, DEFAULTS.active),
@@ -223,7 +223,7 @@ function discover(userDir: string): Catalog {
 
 function persistActive(active: string): boolean {
   const dir = join(homedir(), ".pi", "agent");
-  const file = join(dir, "piconfig.json");
+  const file = join(dir, "suite.json");
   let raw: string | null = null;
   try {
     raw = readFileSync(file, "utf8");
@@ -328,7 +328,7 @@ export default function styles(pi: ExtensionAPI): void {
             ctx.ui.notify(
               persisted
                 ? "Output style disabled."
-                : "Output style disabled for this session; could not persist to ~/.pi/agent/piconfig.json.",
+                : "Output style disabled for this session; could not persist to ~/.pi/agent/suite.json.",
               persisted ? "info" : "warning",
             );
           }
@@ -353,7 +353,7 @@ export default function styles(pi: ExtensionAPI): void {
           ctx.ui.notify(
             persisted
               ? `Output style: ${style.name} (${style.source})`
-              : `Output style ${style.name} applied for this session; could not persist to ~/.pi/agent/piconfig.json.`,
+              : `Output style ${style.name} applied for this session; could not persist to ~/.pi/agent/suite.json.`,
             persisted ? "info" : "warning",
           );
         }

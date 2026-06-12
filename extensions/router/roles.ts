@@ -53,7 +53,7 @@ export function registerRoles(pi: ExtensionAPI, roles: Record<string, RoleTarget
   const unknownRole = (name: string): string => {
     const names = Object.keys(roles)
     if (names.length === 0) {
-      return `router: unknown role "${name}" and no roles are configured (add them under router.roles in piconfig.json)`
+      return `router: unknown role "${name}" and no roles are configured (add them under router.roles in suite.json)`
     }
     const lower = name.toLowerCase()
     const close = names.filter((candidate) => {
@@ -104,7 +104,7 @@ export function registerRoles(pi: ExtensionAPI, roles: Record<string, RoleTarget
   const renderRoles = async (ctx: ExtensionContext): Promise<string> => {
     const names = Object.keys(roles)
     if (names.length === 0) {
-      return "router: no roles configured (add them under router.roles in piconfig.json)"
+      return "router: no roles configured (add them under router.roles in suite.json)"
     }
     const width = names.reduce((max, name) => Math.max(max, name.length), 0)
     const lines: string[] = []

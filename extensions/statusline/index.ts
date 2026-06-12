@@ -146,8 +146,8 @@ function loadConfig(): StatuslineConfig {
     const shipped = JSON.parse(readFileSync(new URL("./config.json", import.meta.url), "utf8"));
     merged = deepMerge(merged, shipped);
   } catch {}
-  merged = deepMerge(merged, overlayFrom(readJson(join(homedir(), ".pi", "agent", "piconfig.json"))));
-  merged = deepMerge(merged, overlayFrom(readJson(join(process.cwd(), ".pi", "piconfig.json"))));
+  merged = deepMerge(merged, overlayFrom(readJson(join(homedir(), ".pi", "agent", "suite.json"))));
+  merged = deepMerge(merged, overlayFrom(readJson(join(process.cwd(), ".pi", "suite.json"))));
   return sanitizeConfig(merged);
 }
 
@@ -185,7 +185,7 @@ function contextPercentOf(ctx: ExtensionContext): number | null {
 
 function persistSegments(segments: Record<SegmentId, SegmentToggle>): { ok: boolean; message: string } {
   const dir = join(homedir(), ".pi", "agent");
-  const file = join(dir, "piconfig.json");
+  const file = join(dir, "suite.json");
   let root: Record<string, unknown> = {};
   let existing: string | null = null;
   try {

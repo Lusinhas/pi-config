@@ -119,9 +119,9 @@ for doc in AGENTS.md APPEND_SYSTEM.md; do
   fi
 done
 
-if [ ! -e "$AGENT_DIR/piconfig.json" ]; then
-  printf '{}\n' > "$AGENT_DIR/piconfig.json"
-  say "created empty $AGENT_DIR/piconfig.json"
+if [ ! -e "$AGENT_DIR/suite.json" ]; then
+  printf '{}\n' > "$AGENT_DIR/suite.json"
+  say "created empty $AGENT_DIR/suite.json"
 fi
 
 say "verifying package load with /doctor"

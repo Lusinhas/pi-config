@@ -51,8 +51,8 @@ function loadConfig(): RouterConfig {
     const shipped: unknown = JSON.parse(readFileSync(new URL("./config.json", import.meta.url), "utf8"))
     if (isRecord(shipped)) merged = deepMerge(merged, shipped)
   } catch {}
-  merged = deepMerge(merged, overlayFrom(readJson(join(homedir(), ".pi", "agent", "piconfig.json"))))
-  merged = deepMerge(merged, overlayFrom(readJson(join(process.cwd(), ".pi", "piconfig.json"))))
+  merged = deepMerge(merged, overlayFrom(readJson(join(homedir(), ".pi", "agent", "suite.json"))))
+  merged = deepMerge(merged, overlayFrom(readJson(join(process.cwd(), ".pi", "suite.json"))))
   const budget = merged.maxBudgetTokens
   return {
     roles: parseRoles(merged.roles),

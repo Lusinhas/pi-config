@@ -52,7 +52,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function storePath(): string {
-  return join(homedir(), ".pi", "agent", "piconfig.json");
+  return join(homedir(), ".pi", "agent", "suite.json");
 }
 
 function readStoreRoot(): Record<string, unknown> {

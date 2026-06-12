@@ -42,7 +42,7 @@ export function splitEscape(command: string, escapeAllowed: boolean): EscapeOutc
   if (match === null) return { command, bypass: false };
   if (!escapeAllowed) {
     throw new Error(
-      'The "unsandboxed:" escape prefix is disabled (shell config sandbox.escape is false). Run the command without the prefix, or enable sandbox.escape in piconfig.json.',
+      'The "unsandboxed:" escape prefix is disabled (shell config sandbox.escape is false). Run the command without the prefix, or enable sandbox.escape in suite.json.',
     );
   }
   const stripped = command.slice(match[0].length);

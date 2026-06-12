@@ -48,9 +48,9 @@ function loadConfig(): SessionsConfig {
   } catch {
     merged = { ...DEFAULTS };
   }
-  const globalOverlay = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalOverlay = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalOverlay && isRecord(globalOverlay.sessions)) merged = deepMerge(merged, globalOverlay.sessions);
-  const projectOverlay = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectOverlay = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectOverlay && isRecord(projectOverlay.sessions)) merged = deepMerge(merged, projectOverlay.sessions);
   return {
     listLimit: clampInt(merged.listLimit, 1, 200, DEFAULTS.listLimit),

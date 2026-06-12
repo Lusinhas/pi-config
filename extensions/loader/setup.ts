@@ -33,7 +33,7 @@ function themeChoices(root: string, exclude: string[]): string[] {
 }
 
 export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContext): Promise<void> {
-  const target = join(homedir(), ".pi", "agent", "piconfig.json")
+  const target = join(homedir(), ".pi", "agent", "suite.json")
   if (!ctx.hasUI) {
     console.log(
       `/setup needs the interactive TUI; this session has no UI. Start pi in TUI mode and run /setup again, or edit ${target} by hand using sections "loader" and "permissions".`
@@ -85,7 +85,7 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
     }
     if (!valid) {
       const overwrite = await ctx.ui.confirm(
-        "Invalid piconfig.json",
+        "Invalid suite.json",
         `${target} is not a valid JSON object. Overwrite it with fresh setup values?`
       )
       if (!overwrite) {

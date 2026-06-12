@@ -188,7 +188,7 @@ function readJsonFile(path: string): Record<string, unknown> | undefined {
 
 function readRouterRoles(cwd: string): Record<string, RoleTarget> {
   const roles: Record<string, RoleTarget> = {}
-  const files = [join(homedir(), ".pi", "agent", "piconfig.json"), join(cwd, ".pi", "piconfig.json")]
+  const files = [join(homedir(), ".pi", "agent", "suite.json"), join(cwd, ".pi", "suite.json")]
   for (const file of files) {
     const parsed = readJsonFile(file)
     if (!parsed || !isRecord(parsed.router)) continue

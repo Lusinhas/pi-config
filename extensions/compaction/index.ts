@@ -71,8 +71,8 @@ function loadConfig(): CompactionConfig {
   } catch {
     merged = {};
   }
-  merged = deepMerge(merged, readOverrides(join(homedir(), ".pi", "agent", "piconfig.json")));
-  merged = deepMerge(merged, readOverrides(join(process.cwd(), ".pi", "piconfig.json")));
+  merged = deepMerge(merged, readOverrides(join(homedir(), ".pi", "agent", "suite.json")));
+  merged = deepMerge(merged, readOverrides(join(process.cwd(), ".pi", "suite.json")));
   const promotion = isRecord(merged.promotion) ? merged.promotion : {};
   const ladder = Array.isArray(promotion.ladder)
     ? promotion.ladder.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)

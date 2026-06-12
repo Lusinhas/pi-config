@@ -72,9 +72,9 @@ function loadConfig(): TodosConfig {
   } catch {
     merged = { ...DEFAULTS };
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.todos)) merged = deepMerge(merged, globalConfig.todos);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.todos)) merged = deepMerge(merged, projectConfig.todos);
   return {
     mirror: typeof merged.mirror === "boolean" ? merged.mirror : DEFAULTS.mirror,

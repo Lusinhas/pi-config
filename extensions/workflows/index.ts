@@ -31,7 +31,7 @@ export function loadConfig(): WorkflowsConfig {
   } catch {
     merged = { ...merged }
   }
-  const overrides = [join(homedir(), ".pi", "agent", "piconfig.json"), join(process.cwd(), ".pi", "piconfig.json")]
+  const overrides = [join(homedir(), ".pi", "agent", "suite.json"), join(process.cwd(), ".pi", "suite.json")]
   for (const file of overrides) {
     try {
       const parsed: unknown = JSON.parse(readFileSync(file, "utf8"))

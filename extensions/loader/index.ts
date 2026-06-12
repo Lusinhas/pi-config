@@ -62,7 +62,7 @@ export function loadConfig(): LoaderConfig {
   } catch {
     merged = { ...merged }
   }
-  const overrides = [join(homedir(), ".pi", "agent", "piconfig.json"), join(process.cwd(), ".pi", "piconfig.json")]
+  const overrides = [join(homedir(), ".pi", "agent", "suite.json"), join(process.cwd(), ".pi", "suite.json")]
   for (const file of overrides) {
     try {
       const parsed: unknown = JSON.parse(readFileSync(file, "utf8"))
@@ -122,7 +122,7 @@ export default function loader(pi: ExtensionAPI): void {
   })
 
   pi.registerCommand("doctor", {
-    description: "Check pi-config resources, agents, and piconfig files for problems",
+    description: "Check pi-config resources, agents, and suite.json files for problems",
     handler: async (_args: string, ctx: ExtensionCommandContext): Promise<void> => {
       runDoctor(loadConfig(), ctx)
     }

@@ -52,12 +52,12 @@ cp APPEND_SYSTEM.md ~/.pi/agent/APPEND_SYSTEM.md
 
 ## First run: /setup and /doctor
 
-- `/setup` — interactive first-run wizard (TUI only). Picks a theme and a permission mode, then writes the `loader` and `permissions` sections of `~/.pi/agent/piconfig.json`.
+- `/setup` — interactive first-run wizard (TUI only). Picks a theme and a permission mode, then writes the `loader` and `permissions` sections of `~/.pi/agent/suite.json`.
 - `/doctor` — health check. Re-runs resource discovery and reports broken skill/prompt/agent frontmatter, invalid theme JSON, name collisions, and config problems with file paths for each finding.
 
-## Configuration: piconfig.json
+## Configuration: suite.json
 
-All extensions read one file: `~/.pi/agent/piconfig.json` (global), deep-merged with `.pi/piconfig.json` (project wins). Every top-level key is an extension section and every key inside it is optional — omitted keys keep the shipped defaults, which live in each extension's `extensions/<name>/config.json`. The example below shows every section with its most useful keys at their default values (except `mcp.servers`, which shows the entry shape; long default lists such as `checkpoint.bashPatterns`, `comments.ignore`, and `astgrep.protectGlobs`/`langMap` are omitted — see the respective `config.json`).
+All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged with `.pi/suite.json` (project wins). Every top-level key is an extension section and every key inside it is optional — omitted keys keep the shipped defaults, which live in each extension's `extensions/<name>/config.json`. The example below shows every section with its most useful keys at their default values (except `mcp.servers`, which shows the entry shape; long default lists such as `checkpoint.bashPatterns`, `comments.ignore`, and `astgrep.protectGlobs`/`langMap` are omitted — see the respective `config.json`).
 
 ```json
 {

@@ -60,9 +60,9 @@ function loadConfig(): ArtifactsConfig {
   } catch {
     merged = { ...DEFAULTS };
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.artifacts)) merged = deepMerge(merged, globalConfig.artifacts);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.artifacts)) merged = deepMerge(merged, projectConfig.artifacts);
   const skipTools = new Set<string>(["artifact"]);
   if (Array.isArray(merged.skipTools)) {

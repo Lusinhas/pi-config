@@ -164,9 +164,9 @@ function loadConfig(): ShellConfig {
   } catch {
     merged = JSON.parse(JSON.stringify(DEFAULTS)) as Record<string, unknown>;
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.shell)) merged = deepMerge(merged, globalConfig.shell);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.shell)) merged = deepMerge(merged, projectConfig.shell);
   return sanitizeConfig(merged);
 }
@@ -264,7 +264,7 @@ export default function shell(pi: ExtensionAPI): void {
 
   function persistSandbox(): string | null {
     try {
-      const path = join(homedir(), ".pi", "agent", "piconfig.json");
+      const path = join(homedir(), ".pi", "agent", "suite.json");
       const root = readJson(path) ?? {};
       const shellSection = isRecord(root.shell) ? { ...root.shell } : {};
       const sandboxSection = isRecord(shellSection.sandbox) ? { ...shellSection.sandbox } : {};
@@ -298,9 +298,9 @@ export default function shell(pi: ExtensionAPI): void {
       if (ctx.hasUI) ctx.ui.notify(message, level);
     };
     if (persistError !== null) {
-      notify(`Sandbox set to ${mode} for this session, but saving to piconfig.json failed: ${persistError}`, "warning");
+      notify(`Sandbox set to ${mode} for this session, but saving to suite.json failed: ${persistError}`, "warning");
     } else {
-      notify(`Sandbox mode set to ${mode} (saved to ~/.pi/agent/piconfig.json).`, "info");
+      notify(`Sandbox mode set to ${mode} (saved to ~/.pi/agent/suite.json).`, "info");
     }
     if (mode !== "off") {
       const available = await wrapperAvailable(execAdapter);
@@ -601,7 +601,7 @@ export default function shell(pi: ExtensionAPI): void {
   });
 
   pi.registerCommand("sandbox", {
-    description: "Show or change shell sandbox mode (off|loose|strict) and network policy; persists to piconfig.json",
+    description: "Show or change shell sandbox mode (off|loose|strict) and network policy; persists to suite.json",
     getArgumentCompletions: (argumentPrefix: string): CompletionItem[] | null => {
       const prefix = argumentPrefix.trimStart();
       const candidates: CompletionItem[] = [

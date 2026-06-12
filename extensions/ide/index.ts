@@ -108,9 +108,9 @@ function loadConfig(): IdeConfig {
   } catch {
     merged = { ...DEFAULTS };
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.ide)) merged = deepMerge(merged, globalConfig.ide);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.ide)) merged = deepMerge(merged, projectConfig.ide);
   return {
     autoConnect: booleanOr(merged.autoConnect, DEFAULTS.autoConnect),

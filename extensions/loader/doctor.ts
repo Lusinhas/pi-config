@@ -222,26 +222,26 @@ export function runDoctor(config: LoaderConfig, ctx: ExtensionCommandContext): v
   findDuplicates(themeNames, "theme", errors)
   findDuplicates(agentNames, "agent", errors)
 
-  const piconfigLines: string[] = []
+  const suiteConfigLines: string[] = []
   const candidates = [
-    { label: "~/.pi/agent/piconfig.json", path: join(homedir(), ".pi", "agent", "piconfig.json") },
-    { label: ".pi/piconfig.json", path: join(ctx.cwd, ".pi", "piconfig.json") }
+    { label: "~/.pi/agent/suite.json", path: join(homedir(), ".pi", "agent", "suite.json") },
+    { label: ".pi/suite.json", path: join(ctx.cwd, ".pi", "suite.json") }
   ]
   for (const candidate of candidates) {
     if (!existsSync(candidate.path)) {
-      piconfigLines.push(`  ${candidate.label}: not present`)
+      suiteConfigLines.push(`  ${candidate.label}: not present`)
       continue
     }
     try {
       const parsed: unknown = JSON.parse(readFileSync(candidate.path, "utf8"))
       if (isRecord(parsed)) {
-        piconfigLines.push(`  ${candidate.label}: ok (${Object.keys(parsed).length} sections)`)
+        suiteConfigLines.push(`  ${candidate.label}: ok (${Object.keys(parsed).length} sections)`)
       } else {
-        piconfigLines.push(`  ${candidate.label}: INVALID`)
+        suiteConfigLines.push(`  ${candidate.label}: INVALID`)
         errors.push(`${candidate.label}: top level must be a JSON object`)
       }
     } catch (err) {
-      piconfigLines.push(`  ${candidate.label}: INVALID`)
+      suiteConfigLines.push(`  ${candidate.label}: INVALID`)
       errors.push(`${candidate.label}: invalid JSON (${message(err)})`)
     }
   }
@@ -252,8 +252,8 @@ export function runDoctor(config: LoaderConfig, ctx: ExtensionCommandContext): v
   lines.push(
     `skills: ${skillPaths.length}  prompts: ${promptPaths.length}  themes: ${themePaths.length}  agents: ${agentFiles.length}`
   )
-  lines.push("piconfig:")
-  lines.push(...piconfigLines)
+  lines.push("suite.json:")
+  lines.push(...suiteConfigLines)
   if (errors.length > 0) {
     lines.push("errors:")
     for (const item of errors) lines.push(`  ${item}`)

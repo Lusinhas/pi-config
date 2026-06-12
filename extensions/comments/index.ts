@@ -129,7 +129,7 @@ function loadConfig(): CommentsConfig {
   } catch {
     merged = {};
   }
-  const overridePaths = [join(homedir(), ".pi", "agent", "piconfig.json"), join(process.cwd(), ".pi", "piconfig.json")];
+  const overridePaths = [join(homedir(), ".pi", "agent", "suite.json"), join(process.cwd(), ".pi", "suite.json")];
   for (const path of overridePaths) {
     const overrides = readJsonFile(path);
     if (overrides !== undefined && isRecord(overrides.comments)) {

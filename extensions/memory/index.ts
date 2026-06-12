@@ -66,7 +66,7 @@ function loadConfig(): MemoryConfig {
     const shipped: unknown = JSON.parse(readFileSync(new URL("./config.json", import.meta.url), "utf8"));
     if (isRecord(shipped)) merged = deepMerge(merged, shipped);
   } catch {}
-  const overridePaths = [join(homedir(), ".pi", "agent", "piconfig.json"), join(process.cwd(), ".pi", "piconfig.json")];
+  const overridePaths = [join(homedir(), ".pi", "agent", "suite.json"), join(process.cwd(), ".pi", "suite.json")];
   for (const path of overridePaths) {
     try {
       const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));

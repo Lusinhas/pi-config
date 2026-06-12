@@ -44,10 +44,10 @@ export function loadConfig(cwd: string, trusted: boolean): SkillsConfig {
   let merged: Record<string, unknown> = { ...defaults }
   const shipped = readJson(new URL("./config.json", import.meta.url))
   if (shipped) merged = { ...merged, ...shipped }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"))
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"))
   if (globalConfig && isRecord(globalConfig.skills)) merged = { ...merged, ...globalConfig.skills }
   if (trusted) {
-    const projectConfig = readJson(join(cwd, ".pi", "piconfig.json"))
+    const projectConfig = readJson(join(cwd, ".pi", "suite.json"))
     if (projectConfig && isRecord(projectConfig.skills)) merged = { ...merged, ...projectConfig.skills }
   }
   return normalize(merged)

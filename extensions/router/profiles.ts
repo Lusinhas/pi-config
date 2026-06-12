@@ -53,7 +53,7 @@ function settingsTheme(cwd: string): string | undefined {
 }
 
 function styleActive(cwd: string): string | undefined {
-  const files = [join(cwd, ".pi", "piconfig.json"), join(homedir(), ".pi", "agent", "piconfig.json")]
+  const files = [join(cwd, ".pi", "suite.json"), join(homedir(), ".pi", "agent", "suite.json")]
   for (const file of files) {
     const parsed = readJson(file)
     if (!parsed || !isRecord(parsed.styles)) continue
@@ -64,8 +64,8 @@ function styleActive(cwd: string): string | undefined {
 }
 
 function writeStyle(cwd: string, style: string | undefined): boolean {
-  const project = join(cwd, ".pi", "piconfig.json")
-  const target = existsSync(project) ? project : join(homedir(), ".pi", "agent", "piconfig.json")
+  const project = join(cwd, ".pi", "suite.json")
+  const target = existsSync(project) ? project : join(homedir(), ".pi", "agent", "suite.json")
   let parsed: Record<string, unknown> = {}
   if (existsSync(target)) {
     const loaded = readJson(target)
@@ -174,7 +174,7 @@ export function registerProfiles(pi: ExtensionAPI, profiles: Record<string, Prof
           ? ` Close matches: ${close.join(", ")}.`
           : names.length > 0
             ? ` Available: ${names.join(", ")}.`
-            : " No profiles are configured (add them under router.profiles in piconfig.json)."
+            : " No profiles are configured (add them under router.profiles in suite.json)."
       notify(ctx, `router: unknown profile "${name}".${hint}`, "error")
       return
     }
@@ -243,7 +243,7 @@ export function registerProfiles(pi: ExtensionAPI, profiles: Record<string, Prof
         state.styleChanged = true
         applied.push(`style ${spec.style}`)
       } else {
-        problems.push(`style "${spec.style}" could not be written to piconfig`)
+        problems.push(`style "${spec.style}" could not be written to suite.json`)
       }
     }
     activeProfile = name
@@ -319,7 +319,7 @@ export function registerProfiles(pi: ExtensionAPI, profiles: Record<string, Prof
       if (writeStyle(ctx.cwd, state.style)) {
         restored.push(state.style ? `style ${state.style}` : "style cleared")
       } else {
-        problems.push("the previous style could not be restored in piconfig")
+        problems.push("the previous style could not be restored in suite.json")
       }
       state.styleChanged = false
     }
@@ -331,7 +331,7 @@ export function registerProfiles(pi: ExtensionAPI, profiles: Record<string, Prof
   const render = (): string => {
     const names = Object.keys(profiles)
     if (names.length === 0) {
-      return "router: no profiles configured (add them under router.profiles in piconfig.json)"
+      return "router: no profiles configured (add them under router.profiles in suite.json)"
     }
     const width = names.reduce((max, name) => Math.max(max, name.length), 0)
     const lines = names.map((name) => {

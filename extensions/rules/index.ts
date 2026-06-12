@@ -97,9 +97,9 @@ function loadConfig(): RulesConfig {
       scopedBudget: DEFAULTS.scopedBudget,
     };
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.rules)) merged = deepMerge(merged, globalConfig.rules);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.rules)) merged = deepMerge(merged, projectConfig.rules);
   return {
     formats: coerceFormats(merged.formats),

@@ -125,9 +125,9 @@ function loadConfig(): WebConfig {
   } catch {
     merged = { ...DEFAULTS };
   }
-  const globalConfig = readJson(join(homedir(), ".pi", "agent", "piconfig.json"));
+  const globalConfig = readJson(join(homedir(), ".pi", "agent", "suite.json"));
   if (globalConfig && isRecord(globalConfig.web)) merged = deepMerge(merged, globalConfig.web);
-  const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
+  const projectConfig = readJson(join(process.cwd(), ".pi", "suite.json"));
   if (projectConfig && isRecord(projectConfig.web)) merged = deepMerge(merged, projectConfig.web);
   return {
     endpoint: stringOr(merged.endpoint, DEFAULTS.endpoint),
