@@ -500,11 +500,11 @@ export default function ide(pi: ExtensionAPI): void {
     return { message: { customType: "idecontext", content, display: false } };
   });
 
-  pi.on("tool_call", (event, ctx) => {
+  pi.on("tool_execution_start", (event, ctx) => {
     lastCtx = ctx;
     if (!config.diff || bridge === undefined) return;
     if (event.toolName !== "edit" && event.toolName !== "write") return;
-    const input = event.input as Record<string, unknown>;
+    const input: Record<string, unknown> = isRecord(event.args) ? event.args : {};
     const path = typeof input.path === "string" ? input.path.trim() : "";
     if (path === "") return;
     const abs = resolve(ctx.cwd, path);
