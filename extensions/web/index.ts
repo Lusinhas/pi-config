@@ -1,16 +1,15 @@
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { Type } from "typebox";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { DiskCache, cacheKey } from "./cache.ts";
-import { ExaClient, buildEndpoint, pickArgs, resolveApiKey } from "./mcp.ts";
+import { ParallelClient, buildEndpoint, pickArgs } from "./mcp.ts";
 import { directFetch, normalizeText } from "./html.ts";
 
 interface WebConfig {
-  apiKey: string;
   endpoint: string;
-  tools: string[];
   numResults: number;
   maxChars: number;
   cacheTtlMin: number;
@@ -20,9 +19,7 @@ interface WebConfig {
 }
 
 const DEFAULTS: WebConfig = {
-  apiKey: "",
-  endpoint: "https://mcp.exa.ai/mcp",
-  tools: ["web_search_exa", "web_fetch_exa", "web_search_advanced_exa"],
+  endpoint: "https://search.parallel.ai/mcp",
   numResults: 8,
   maxChars: 40000,
   cacheTtlMin: 30,
@@ -31,10 +28,10 @@ const DEFAULTS: WebConfig = {
   promptSnippet: true,
 };
 
-const SEARCH_TOOL = "web_search_exa";
-const ADVANCED_TOOL = "web_search_advanced_exa";
-const FETCH_TOOL = "web_fetch_exa";
+const SEARCH_TOOL = "web_search";
+const FETCH_TOOL = "web_fetch";
 const SEARCH_TEXT_CAP = 20000;
+const EXCERPT_CAP = 2000;
 
 interface ToolText {
   type: "text";
@@ -48,9 +45,7 @@ interface ToolOutput {
 
 interface SearchParams {
   query: string;
-  domains?: string[];
-  excludeDomains?: string[];
-  recentDays?: number;
+  queries?: string[];
   fresh?: boolean;
 }
 
@@ -64,7 +59,7 @@ interface SearchHit {
   title: string;
   url: string;
   publishedDate: string;
-  snippet: string;
+  excerpt: string;
 }
 
 interface CachedSearch {
@@ -77,7 +72,7 @@ interface CachedPage {
   title: string;
   url: string;
   text: string;
-  source: "exa" | "direct";
+  source: "mcp" | "direct";
   truncated: boolean;
 }
 
@@ -122,12 +117,6 @@ function stringOr(value: unknown, fallback: string): string {
   return typeof value === "string" && value.trim() !== "" ? value.trim() : fallback;
 }
 
-function stringList(value: unknown, fallback: string[]): string[] {
-  if (!Array.isArray(value)) return fallback;
-  const out = value.filter((item): item is string => typeof item === "string" && item.trim() !== "").map((item) => item.trim());
-  return out.length > 0 ? out : fallback;
-}
-
 function loadConfig(): WebConfig {
   let merged: Record<string, unknown> = { ...DEFAULTS };
   try {
@@ -141,9 +130,7 @@ function loadConfig(): WebConfig {
   const projectConfig = readJson(join(process.cwd(), ".pi", "piconfig.json"));
   if (projectConfig && isRecord(projectConfig.web)) merged = deepMerge(merged, projectConfig.web);
   return {
-    apiKey: typeof merged.apiKey === "string" ? merged.apiKey : DEFAULTS.apiKey,
     endpoint: stringOr(merged.endpoint, DEFAULTS.endpoint),
-    tools: stringList(merged.tools, DEFAULTS.tools),
     numResults: intBetween(merged.numResults, 1, 25, DEFAULTS.numResults),
     maxChars: intBetween(merged.maxChars, 500, 2000000, DEFAULTS.maxChars),
     cacheTtlMin: intBetween(merged.cacheTtlMin, 0, 525600, DEFAULTS.cacheTtlMin),
@@ -170,17 +157,13 @@ function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function cleanDomains(value: string[] | undefined): string[] {
+function cleanQueries(value: string[] | undefined): string[] {
   if (!Array.isArray(value)) return [];
   const out: string[] = [];
   for (const item of value) {
     if (typeof item !== "string") continue;
-    const domain = item
-      .trim()
-      .toLowerCase()
-      .replace(/^https?:\/\//, "")
-      .replace(/\/.*$/, "");
-    if (domain !== "" && !out.includes(domain)) out.push(domain);
+    const query = collapse(item);
+    if (query !== "" && !out.includes(query)) out.push(query);
   }
   return out;
 }
@@ -201,6 +184,20 @@ function resultArray(parsed: unknown): unknown[] {
   return [];
 }
 
+function excerptStrings(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((part): part is string => typeof part === "string")
+    .map((part) => part.trim())
+    .filter((part) => part !== "");
+}
+
+function hitExcerpt(entry: Record<string, unknown>): string {
+  const excerpts = excerptStrings(entry.excerpts);
+  const body = excerpts.length > 0 ? excerpts.join("\n…\n") : firstString(entry, ["summary", "snippet", "text"]).trim();
+  return body.length > EXCERPT_CAP ? `${body.slice(0, EXCERPT_CAP - 1)}…` : body;
+}
+
 function parseSearchHits(text: string): SearchHit[] {
   let parsed: unknown;
   try {
@@ -213,30 +210,27 @@ function parseSearchHits(text: string): SearchHit[] {
     if (!isRecord(entry)) continue;
     const url = firstString(entry, ["url", "id"]);
     if (!/^https?:\/\//i.test(url)) continue;
-    const highlights = Array.isArray(entry.highlights)
-      ? entry.highlights.filter((part): part is string => typeof part === "string").map(collapse).join(" … ")
-      : "";
-    const body = highlights !== "" ? highlights : collapse(firstString(entry, ["summary", "snippet", "text"])).slice(0, 400);
     hits.push({
       title: collapse(firstString(entry, ["title"])),
       url,
-      publishedDate: firstString(entry, ["publishedDate", "published_date"]).slice(0, 10),
-      snippet: body.length > 400 ? `${body.slice(0, 397)}…` : body,
+      publishedDate: firstString(entry, ["publish_date", "publishedDate", "published_date"]).slice(0, 10),
+      excerpt: hitExcerpt(entry),
     });
   }
   return hits;
 }
 
 function formatHits(hits: SearchHit[], query: string): string {
-  const lines: string[] = [`${hits.length} results for "${query}":`, ""];
+  const lines: string[] = [`${hits.length} results for "${query}":`];
   hits.forEach((hit, index) => {
-    lines.push(`${index + 1}. ${hit.title !== "" ? hit.title : hit.url}`);
-    lines.push(`   ${hit.url}`);
-    const meta = [hit.publishedDate, hit.snippet].filter((part) => part !== "").join(" — ");
-    if (meta !== "") lines.push(`   ${meta}`);
     lines.push("");
+    const date = hit.publishedDate !== "" ? ` (${hit.publishedDate})` : "";
+    lines.push(`${index + 1}. ${hit.title !== "" ? hit.title : hit.url}${date}`);
+    lines.push(`   ${hit.url}`);
+    if (hit.excerpt !== "") lines.push(hit.excerpt);
   });
-  lines.push("Call webfetch with one of these urls to read the full page content.");
+  lines.push("");
+  lines.push("Excerpts are usually enough to answer directly; call webfetch with a url when you need the full page.");
   return lines.join("\n");
 }
 
@@ -255,9 +249,15 @@ function isCachedPage(value: unknown): value is CachedPage {
     typeof value.title === "string" &&
     typeof value.url === "string" &&
     typeof value.text === "string" &&
-    (value.source === "exa" || value.source === "direct") &&
+    (value.source === "mcp" || value.source === "direct") &&
     typeof value.truncated === "boolean"
   );
+}
+
+function pageBody(entry: Record<string, unknown>): string {
+  const direct = firstString(entry, ["full_content", "text", "content", "markdown"]);
+  if (direct !== "") return direct;
+  return excerptStrings(entry.excerpts).join("\n…\n");
 }
 
 function parsePage(text: string, fallbackUrl: string): { title: string; url: string; text: string } {
@@ -269,7 +269,7 @@ function parsePage(text: string, fallbackUrl: string): { title: string; url: str
   }
   for (const entry of resultArray(parsed)) {
     if (!isRecord(entry)) continue;
-    const body = firstString(entry, ["text", "content", "markdown"]);
+    const body = pageBody(entry);
     if (body === "") continue;
     return {
       title: firstString(entry, ["title"]),
@@ -278,15 +278,15 @@ function parsePage(text: string, fallbackUrl: string): { title: string; url: str
     };
   }
   if (isRecord(parsed)) {
-    const body = firstString(parsed, ["text", "content", "markdown"]);
+    const body = pageBody(parsed);
     if (body !== "") {
       return { title: firstString(parsed, ["title"]), url: firstString(parsed, ["url"]) || fallbackUrl, text: body };
     }
   }
-  return { title: "", url: fallbackUrl, text };
+  return { title: "", url: fallbackUrl, text: isRecord(parsed) || Array.isArray(parsed) ? "" : text };
 }
 
-function finishPage(title: string, url: string, rawText: string, source: "exa" | "direct", maxChars: number): CachedPage {
+function finishPage(title: string, url: string, rawText: string, source: "mcp" | "direct", maxChars: number): CachedPage {
   const text = normalizeText(rawText);
   const truncated = text.length > maxChars;
   return {
@@ -312,23 +312,21 @@ function renderPage(page: CachedPage, target: URL, maxChars: number, cached: boo
 
 const PROMPT_SNIPPET = [
   "## Web access",
-  "Two web tools are available, backed by Exa's MCP server:",
-  "- websearch: use it to discover pages when you do not know the url — research questions, current events, library docs, error messages. Supports domains, excludeDomains, and recentDays filters when the server's advanced search tool is enabled.",
+  "Two web tools are available, backed by Parallel's Search MCP server:",
+  "- websearch: use it to discover pages and gather current information — research questions, current events, library docs, error messages. Put domain or freshness constraints directly in the query text (e.g. \"... from nodejs.org\", \"... in the last month\"); the optional queries parameter adds 2-3 keyword variants for better coverage. Result excerpts are dense and often answer the question directly.",
   "- webfetch: use it to read the full text of a page when you already have the url, whether from websearch results, the user, or code.",
-  "Search first to find candidate sources, then fetch the one or two most promising results. Responses are cached for a short while; pass fresh: true on either tool when you need live data.",
+  "Search first; fetch only the one or two pages whose excerpts are not enough. Responses are cached for a short while; pass fresh: true on either tool when you need live data.",
 ].join("\n");
 
 export default function web(pi: ExtensionAPI): void {
   const config = loadConfig();
   const cache = new DiskCache(config.cacheTtlMin, config.cacheMaxEntries);
-  let client: ExaClient | undefined;
-  let clientKey = "";
+  const sessionId = randomUUID();
+  let client: ParallelClient | undefined;
 
-  const getClient = (): ExaClient => {
-    const apiKey = resolveApiKey(config.apiKey);
-    if (client === undefined || clientKey !== apiKey) {
-      client = new ExaClient(buildEndpoint(config.endpoint, config.tools), apiKey);
-      clientKey = apiKey;
+  const getClient = (): ParallelClient => {
+    if (client === undefined) {
+      client = new ParallelClient(buildEndpoint(config.endpoint));
     }
     return client;
   };
@@ -337,26 +335,25 @@ export default function web(pi: ExtensionAPI): void {
     name: "websearch",
     label: "Web Search",
     description:
-      "Search the web through Exa's MCP server. Returns a numbered list of results with title, url, publication date, and snippet. Use webfetch afterwards to read full page content.",
+      "Search the web through Parallel's Search MCP server. Returns a list of results with title, url, publication date, and a dense excerpt that is often enough to answer directly. Use webfetch afterwards when you need full page content.",
     parameters: Type.Object({
-      query: Type.String({ description: "The search query" }),
-      domains: Type.Optional(Type.Array(Type.String(), { description: "Only return results from these domains (needs the advanced search tool)" })),
-      excludeDomains: Type.Optional(Type.Array(Type.String(), { description: "Never return results from these domains (needs the advanced search tool)" })),
-      recentDays: Type.Optional(Type.Number({ description: "Only return results published within the last N days (needs the advanced search tool)" })),
+      query: Type.String({
+        description:
+          "Natural-language description of what the search should find. Include any domain or freshness constraints directly in the text, e.g. \"release notes from nodejs.org in the last month\"",
+      }),
+      queries: Type.Optional(
+        Type.Array(Type.String(), {
+          description: "Optional 2-3 concise keyword queries (3-6 words each) related to the query; improves coverage",
+        })
+      ),
       fresh: Type.Optional(Type.Boolean({ description: "Bypass the local cache and force a live search" })),
     }),
     execute: async (_toolCallId: string, params: SearchParams, signal: AbortSignal): Promise<ToolOutput> => {
       const query = typeof params.query === "string" ? collapse(params.query) : "";
       if (query === "") throw new Error("websearch: the query parameter is required");
-      const domains = cleanDomains(params.domains);
-      const excludeDomains = cleanDomains(params.excludeDomains);
-      let startPublishedDate: string | undefined;
-      if (typeof params.recentDays === "number" && Number.isFinite(params.recentDays) && params.recentDays > 0) {
-        const start = new Date(Date.now() - Math.ceil(params.recentDays) * 86400000);
-        startPublishedDate = `${start.toISOString().slice(0, 10)}T00:00:00.000Z`;
-      }
-      const wantsFilters = domains.length > 0 || excludeDomains.length > 0 || startPublishedDate !== undefined;
-      const key = cacheKey(["search", query, domains, excludeDomains, startPublishedDate ?? "", config.numResults]);
+      const queries = cleanQueries(params.queries);
+      const searchQueries = queries.length > 0 ? queries : [query];
+      const key = cacheKey(["search", query, searchQueries, config.numResults]);
       if (params.fresh !== true) {
         const hit = cache.get(key);
         if (isCachedSearch(hit)) {
@@ -367,40 +364,26 @@ export default function web(pi: ExtensionAPI): void {
         }
       }
       const requestSignal = withTimeout(signal, config.timeoutSec);
-      const exa = getClient();
-      let text: string;
-      let toolName: string;
+      const mcp = getClient();
       try {
-        await exa.ensureReady(requestSignal);
-        toolName = wantsFilters && exa.hasTool(ADVANCED_TOOL) ? ADVANCED_TOOL : SEARCH_TOOL;
-        if (!exa.hasTool(toolName)) {
-          const available = exa.toolNames().join(", ");
-          throw new Error(`server does not expose ${toolName}; available tools: ${available !== "" ? available : "none"}`);
+        await mcp.ensureReady(requestSignal);
+        if (!mcp.hasTool(SEARCH_TOOL)) {
+          const available = mcp.toolNames().join(", ");
+          throw new Error(`server does not expose ${SEARCH_TOOL}; available tools: ${available !== "" ? available : "none"}`);
         }
-        const props = exa.toolProps(toolName);
+        const props = mcp.toolProps(SEARCH_TOOL);
         const args = pickArgs(props, {
-          query,
-          numResults: config.numResults,
-          includeDomains: domains.length > 0 ? domains : undefined,
-          excludeDomains: excludeDomains.length > 0 ? excludeDomains : undefined,
-          startPublishedDate,
+          objective: query,
+          search_queries: searchQueries,
+          session_id: sessionId,
         });
-        const result = await exa.callWithRetry(toolName, args, requestSignal);
-        text = result.text;
-        const dropped = [
-          domains.length > 0 && args.includeDomains === undefined ? "domains" : "",
-          excludeDomains.length > 0 && args.excludeDomains === undefined ? "excludeDomains" : "",
-          startPublishedDate !== undefined && args.startPublishedDate === undefined ? "recentDays" : "",
-        ].filter((part) => part !== "");
-        const hits = parseSearchHits(text);
-        let rendered = hits.length > 0 ? formatHits(hits, query) : capText(text, SEARCH_TEXT_CAP);
-        if (dropped.length > 0) {
-          rendered += `\n\n[note: the ${toolName} tool does not support these filters, which were ignored: ${dropped.join(", ")}]`;
-        }
-        cache.set(key, { text: rendered, tool: toolName, count: hits.length } satisfies CachedSearch);
+        const result = await mcp.callWithRetry(SEARCH_TOOL, args, requestSignal);
+        const hits = parseSearchHits(result.text).slice(0, config.numResults);
+        const rendered = capText(hits.length > 0 ? formatHits(hits, query) : result.text, SEARCH_TEXT_CAP);
+        cache.set(key, { text: rendered, tool: SEARCH_TOOL, count: hits.length } satisfies CachedSearch);
         return {
           content: [{ type: "text", text: rendered }],
-          details: { query, tool: toolName, count: hits.length, cached: false },
+          details: { query, tool: SEARCH_TOOL, count: hits.length, cached: false },
         };
       } catch (error) {
         throw new Error(`websearch: ${describeError(error)}`);
@@ -412,7 +395,7 @@ export default function web(pi: ExtensionAPI): void {
     name: "webfetch",
     label: "Web Fetch",
     description:
-      "Fetch the readable text content of a web page by url through Exa's MCP server, falling back to a direct HTTP fetch with local html-to-text extraction when the server is unavailable.",
+      "Fetch the readable text content of a web page by url through Parallel's Search MCP server, falling back to a direct HTTP fetch with local html-to-text extraction when the server is unavailable.",
     parameters: Type.Object({
       url: Type.String({ description: "Absolute url of the page to fetch" }),
       maxChars: Type.Optional(Type.Number({ description: "Maximum characters of page text to return (default 40000)" })),
@@ -439,31 +422,31 @@ export default function web(pi: ExtensionAPI): void {
       const requestSignal = withTimeout(signal, config.timeoutSec);
       const httpScheme = target.protocol === "http:" || target.protocol === "https:";
       let page: CachedPage | undefined;
-      let exaError = "";
+      let mcpError = "";
       if (httpScheme) {
         try {
-          const exa = getClient();
-          await exa.ensureReady(requestSignal);
-          if (!exa.hasTool(FETCH_TOOL)) throw new Error(`server does not expose ${FETCH_TOOL}`);
-          const props = exa.toolProps(FETCH_TOOL);
+          const mcp = getClient();
+          await mcp.ensureReady(requestSignal);
+          if (!mcp.hasTool(FETCH_TOOL)) throw new Error(`server does not expose ${FETCH_TOOL}`);
+          const props = mcp.toolProps(FETCH_TOOL);
           const args = pickArgs(props, {
-            url: target.href,
-            urls: props.has("urls") ? [target.href] : undefined,
-            maxCharacters: maxChars + 1,
+            urls: [target.href],
+            full_content: true,
+            session_id: sessionId,
           });
-          if (args.url === undefined && args.urls === undefined) args.url = target.href;
-          const result = await exa.callWithRetry(FETCH_TOOL, args, requestSignal);
+          if (args.urls === undefined) args.urls = [target.href];
+          const result = await mcp.callWithRetry(FETCH_TOOL, args, requestSignal);
           const parsed = parsePage(result.text, target.href);
           if (collapse(parsed.text) !== "") {
-            page = finishPage(parsed.title, parsed.url, parsed.text, "exa", maxChars);
+            page = finishPage(parsed.title, parsed.url, parsed.text, "mcp", maxChars);
           } else {
-            exaError = "exa mcp returned no text for this url";
+            mcpError = "parallel mcp returned no text for this url";
           }
         } catch (error) {
-          exaError = describeError(error);
+          mcpError = describeError(error);
         }
         if (page === undefined && requestSignal.aborted) {
-          throw new Error(`webfetch: request aborted or timed out (${exaError})`);
+          throw new Error(`webfetch: request aborted or timed out (${mcpError})`);
         }
       }
       if (page === undefined) {
@@ -472,8 +455,8 @@ export default function web(pi: ExtensionAPI): void {
           page = finishPage(fetched.title, fetched.url, fetched.text, "direct", maxChars);
         } catch (error) {
           const directError = describeError(error);
-          if (exaError !== "") {
-            throw new Error(`webfetch: exa mcp failed (${exaError}); direct fetch failed (${directError})`);
+          if (mcpError !== "") {
+            throw new Error(`webfetch: parallel mcp failed (${mcpError}); direct fetch failed (${directError})`);
           }
           throw new Error(`webfetch: ${directError}`);
         }

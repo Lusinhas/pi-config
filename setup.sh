@@ -139,6 +139,5 @@ fi
 
 say "setup complete"
 say "next steps:"
-say "  1. export EXA_API_KEY=<key> (or set web.apiKey in $AGENT_DIR/piconfig.json) for websearch/webfetch"
-say "  2. start pi and run /setup for the guided wizard (theme, approval mode)"
-say "  3. run /doctor inside pi anytime to re-check the suite"
+say "  1. start pi and run /setup for the guided wizard (theme, approval mode)"
+say "  2. run /doctor inside pi anytime to re-check the suite"

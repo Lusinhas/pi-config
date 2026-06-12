@@ -5,8 +5,6 @@ import type { ExtensionCommandContext } from "@earendil-works/pi-coding-agent"
 import { resolvePackageRoot, walkFiles } from "./discovery.ts"
 import type { LoaderConfig } from "./discovery.ts"
 
-const exaPlaceholder = "REPLACE_WITH_EXA_API_KEY (https://dashboard.exa.ai) or export EXA_API_KEY"
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -38,7 +36,7 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
   const target = join(homedir(), ".pi", "agent", "piconfig.json")
   if (!ctx.hasUI) {
     console.log(
-      `/setup needs the interactive TUI; this session has no UI. Start pi in TUI mode and run /setup again, or edit ${target} by hand using sections "loader", "permissions", and "web".`
+      `/setup needs the interactive TUI; this session has no UI. Start pi in TUI mode and run /setup again, or edit ${target} by hand using sections "loader" and "permissions".`
     )
     return
   }
@@ -73,12 +71,6 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
     return
   }
   const chosenMode = modePick === "skip" ? undefined : modePick
-
-  const wantsExa = await ctx.ui.confirm(
-    "Web search",
-    "Add an EXA_API_KEY placeholder to the web section of piconfig.json? Get a key at https://dashboard.exa.ai and paste it there, or export EXA_API_KEY in your shell instead."
-  )
-
   let existing: Record<string, unknown> = {}
   if (existsSync(target)) {
     let valid = false
@@ -124,17 +116,6 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
       section.mode = chosenMode
       next.permissions = section
       written.push(`permissions.mode = "${chosenMode}"`)
-    }
-  }
-  if (wantsExa) {
-    const section = isRecord(next.web) ? { ...next.web } : {}
-    const current = typeof section.exaApiKey === "string" ? section.exaApiKey.trim() : ""
-    if (current.length > 0) {
-      kept.push("web.exaApiKey already set; left unchanged")
-    } else {
-      section.exaApiKey = exaPlaceholder
-      next.web = section
-      written.push("web.exaApiKey = placeholder (replace with your real key)")
     }
   }
 

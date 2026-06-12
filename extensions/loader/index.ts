@@ -128,7 +128,7 @@ export default function loader(pi: ExtensionAPI): void {
     }
   })
   pi.registerCommand("setup", {
-    description: "First-run wizard: pick a theme, default approval mode, and web search key",
+    description: "First-run wizard: pick a theme and default approval mode",
     handler: async (_args: string, ctx: ExtensionCommandContext): Promise<void> => {
       await runSetup(loadConfig(), ctx)
     }

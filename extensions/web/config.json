@@ -1,7 +1,5 @@
 {
-  "apiKey": "",
   "numResults": 8,
-  "searchType": "auto",
   "maxChars": 40000,
   "cacheTtlMin": 30,
   "cacheMaxEntries": 200,

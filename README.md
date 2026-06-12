@@ -52,7 +52,7 @@ cp APPEND_SYSTEM.md ~/.pi/agent/APPEND_SYSTEM.md
 
 ## First run: /setup and /doctor
 
-- `/setup` — interactive first-run wizard (TUI only). Picks a theme, a permission mode, and an Exa API key for web search, then writes the `loader`, `permissions`, and `web` sections of `~/.pi/agent/piconfig.json`.
+- `/setup` — interactive first-run wizard (TUI only). Picks a theme and a permission mode, then writes the `loader` and `permissions` sections of `~/.pi/agent/piconfig.json`.
 - `/doctor` — health check. Re-runs resource discovery and reports broken skill/prompt/agent frontmatter, invalid theme JSON, name collisions, and config problems with file paths for each finding.
 
 ## Configuration: piconfig.json
@@ -186,9 +186,7 @@ All extensions read one file: `~/.pi/agent/piconfig.json` (global), deep-merged 
     "jobs": { "autoBackgroundMs": 30000, "capBytes": 2097152, "defaultWaitSec": 30, "keepFinished": 20 }
   },
   "web": {
-    "apiKey": "",
-    "endpoint": "https://mcp.exa.ai/mcp",
-    "tools": ["web_search_exa", "web_fetch_exa", "web_search_advanced_exa"],
+    "endpoint": "https://search.parallel.ai/mcp",
     "numResults": 8,
     "maxChars": 40000,
     "cacheTtlMin": 30,
@@ -304,7 +302,7 @@ All extensions read one file: `~/.pi/agent/piconfig.json` (global), deep-merged 
 | keywords | /keywords | — | Thinking-level trigger words (ultrathink, quickthink, ...), orchestrate/ultrawork modes |
 | worktrees | /worktree | — | Git worktree lifecycle under `.worktrees/` with branch prefixes and include-file copying |
 | shell | /jobs, /sandbox | bash (override), jobs | Bash with auto-backgrounding after 30s, job control, output caps, optional sandbox |
-| web | — | websearch, webfetch | search plus page fetch via Exa's MCP server (mcp.exa.ai) with caching, size limits, and a direct-fetch fallback |
+| web | — | websearch, webfetch | search plus page fetch via Parallel's Search MCP server (search.parallel.ai, free, no API key) with caching, size limits, and a direct-fetch fallback |
 | ide | /ide | idediagnostics | Claude Code-compatible VS Code bridge: discovers the Claude Code extension's lock files (`~/.claude/ide`), connects to its WebSocket MCP server, injects the live editor selection as context each turn, pastes IDE at-mentions into the input, opens native diff tabs after every edit/write, and serves language diagnostics to the model without a build |
 | astgrep | — | astsearch, astrewrite | ast-grep structural search and staged, preview-first structural rewrites |
 | sessions | /search, /btw | history | Search and read past session transcripts; `/btw` asks a side question with session context |

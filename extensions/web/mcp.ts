@@ -22,21 +22,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function resolveApiKey(configured: string): string {
-  const fromEnv = process.env.EXA_API_KEY;
-  if (typeof fromEnv === "string" && fromEnv.trim() !== "") return fromEnv.trim();
-  return configured.trim();
-}
-
-export function buildEndpoint(endpoint: string, tools: string[]): string {
+export function buildEndpoint(endpoint: string): string {
   let url: URL;
   try {
     url = new URL(endpoint);
   } catch {
-    url = new URL("https://mcp.exa.ai/mcp");
-  }
-  if (tools.length > 0 && !url.searchParams.has("tools")) {
-    url.searchParams.set("tools", tools.join(","));
+    url = new URL("https://search.parallel.ai/mcp");
   }
   return url.href;
 }
@@ -91,17 +82,15 @@ function contentText(result: unknown): string {
   return parts.join("\n").trim();
 }
 
-export class ExaClient {
+export class ParallelClient {
   private readonly endpoint: string;
-  private readonly apiKey: string;
   private sessionId = "";
   private ready = false;
   private nextId = 1;
   private readonly tools = new Map<string, Set<string>>();
 
-  constructor(endpoint: string, apiKey: string) {
+  constructor(endpoint: string) {
     this.endpoint = endpoint;
-    this.apiKey = apiKey;
   }
 
   toolNames(): string[] {
@@ -128,7 +117,6 @@ export class ExaClient {
       accept: "application/json, text/event-stream",
       "mcp-protocol-version": "2025-06-18",
     };
-    if (this.apiKey !== "") headers["x-api-key"] = this.apiKey;
     if (this.sessionId !== "") headers["mcp-session-id"] = this.sessionId;
     return headers;
   }
@@ -153,17 +141,13 @@ export class ExaClient {
 
   private failure(status: number, body: string): Error {
     if (status === 401 || status === 403) {
-      return new Error(
-        "exa mcp rejected the api key; set EXA_API_KEY or web.apiKey in ~/.pi/agent/piconfig.json (keys: https://dashboard.exa.ai/api-keys)"
-      );
+      return new Error(`parallel mcp rejected the request with http ${status}; check the web.endpoint setting`);
     }
     if (status === 429) {
-      return new Error(
-        "exa mcp rate limit hit; set EXA_API_KEY or web.apiKey in ~/.pi/agent/piconfig.json to lift free-tier limits, or retry later"
-      );
+      return new Error("parallel mcp rate limit hit; retry later");
     }
     const detail = body.trim().slice(0, 300);
-    return new Error(`exa mcp request failed with http ${status}${detail !== "" ? `: ${detail}` : ""}`);
+    return new Error(`parallel mcp request failed with http ${status}${detail !== "" ? `: ${detail}` : ""}`);
   }
 
   private async rpc(method: string, params: Record<string, unknown>, signal: AbortSignal): Promise<unknown> {
@@ -171,17 +155,17 @@ export class ExaClient {
     const posted = await this.post({ jsonrpc: "2.0", id, method, params }, signal);
     if (posted.status === 404 && this.sessionId !== "") {
       this.reset();
-      throw new Error("exa mcp session expired; retry the request");
+      throw new Error("parallel mcp session expired; retry the request");
     }
     if (posted.status >= 400) throw this.failure(posted.status, posted.body);
     for (const message of parseMessages(posted.body, posted.contentType)) {
       if (message.id !== id) continue;
       if (message.error !== undefined) {
-        throw new Error(`exa mcp ${method} failed: ${message.error.message ?? `code ${message.error.code ?? "unknown"}`}`);
+        throw new Error(`parallel mcp ${method} failed: ${message.error.message ?? `code ${message.error.code ?? "unknown"}`}`);
       }
       return message.result;
     }
-    throw new Error(`exa mcp ${method} returned no response for request ${id}`);
+    throw new Error(`parallel mcp ${method} returned no response for request ${id}`);
   }
 
   private async notify(method: string, signal: AbortSignal): Promise<void> {
@@ -202,7 +186,7 @@ export class ExaClient {
       },
       signal
     );
-    if (!isRecord(initialized)) throw new Error("exa mcp initialize returned an invalid result");
+    if (!isRecord(initialized)) throw new Error("parallel mcp initialize returned an invalid result");
     await this.notify("notifications/initialized", signal);
     const listed = await this.rpc("tools/list", {}, signal);
     this.tools.clear();
@@ -216,7 +200,7 @@ export class ExaClient {
         this.tools.set(tool.name, props);
       }
     }
-    if (this.tools.size === 0) throw new Error("exa mcp listed no tools; check the endpoint and tools filter");
+    if (this.tools.size === 0) throw new Error("parallel mcp listed no tools; check the endpoint setting");
     this.ready = true;
   }
 
@@ -225,8 +209,8 @@ export class ExaClient {
     const result = await this.rpc("tools/call", { name, arguments: args }, signal);
     const text = contentText(result);
     const isError = isRecord(result) && result.isError === true;
-    if (isError) throw new Error(text !== "" ? text : `exa mcp tool ${name} reported an error`);
-    if (text === "") throw new Error(`exa mcp tool ${name} returned no text content`);
+    if (isError) throw new Error(text !== "" ? text : `parallel mcp tool ${name} reported an error`);
+    if (text === "") throw new Error(`parallel mcp tool ${name} returned no text content`);
     return { text, isError: false };
   }
 
