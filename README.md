@@ -305,13 +305,6 @@ All extensions read one file: `~/.pi/agent/piconfig.json` (global), deep-merged 
 | styles | /style | — | Output styles appended to the system prompt, user-defined styles in `~/.pi/agent/styles` |
 | router | /role, /profile, /effort | — | Named model roles and profiles, failure-driven fallback chains, and a reasoning-effort dial (off→xhigh plus a `max` tier that forces token-budget providers to `maxBudgetTokens`) |
 
-## Recommended companions
-
-- **pi-lens** — LSP integration (go-to-definition, diagnostics, rename). pi-config deliberately ships no LSP extension; the bundled ide extension covers diagnostics while VS Code is open, but standalone or non-VS-Code workflows need pi-lens.
-- **pi-chrome** — real browser automation via an extension. The bundled `browser` skill covers Playwright-from-bash; pi-chrome is the richer option.
-
-Avoid installing packages that duplicate built-ins (for example pi-subagents, pi-mcp-adapter, or pi-web-access) alongside pi-config — the bundled subagents, mcp, and web extensions cover the same ground and the tools would collide.
-
 ## Credits
 
 pi-config is a porting effort. Lineage is approximate — many of these features now exist in several tools — but the primary inspirations are:
