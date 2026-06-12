@@ -1,12 +1,12 @@
 # pi-config
 
-A batteries-included configuration suite for the [pi](https://pi.dev) coding agent: 29 extensions, 24 skills, 9 subagent definitions, 16 prompt templates, and 5 themes in a single package. It ports the workflows people miss from Claude Code, Codex, oh-my-pi, and oh-my-openagent — plan mode, permissions, subagents, todos, checkpoints, memory, MCP, hooks, web access, the VS Code IDE bridge, AST-aware editing, and more — onto upstream pi.
+A batteries-included configuration suite for the [pi](https://pi.dev) coding agent: 30 extensions, 24 skills, 9 subagent definitions, 16 prompt templates, and 5 themes in a single package. It ports the workflows people miss from Claude Code, Codex, oh-my-pi, and oh-my-openagent — plan mode, permissions, subagents, todos, checkpoints, memory, MCP, hooks, web access, the VS Code IDE bridge, AST-aware editing, and more — onto upstream pi.
 
 ## What's inside
 
 | Category | Contents |
 | --- | --- |
-| Extensions | loader, subagents, workflows, permissions, toolview, hooks, plan, todos, goals, memory, checkpoint, compaction, rules, statusline, usage, mcp, artifacts, comments, hashline, ask, keywords, worktrees, shell, web, ide, astgrep, sessions, styles, router |
+| Extensions | loader, skills, subagents, workflows, permissions, toolview, hooks, plan, todos, goals, memory, checkpoint, compaction, rules, statusline, usage, mcp, artifacts, comments, hashline, ask, keywords, worktrees, shell, web, ide, astgrep, sessions, styles, router |
 | Skills | commit, rebase, pr, conflicts, code, security, simplify, unit, integration, coverage, deep, codebase, init, deepinit, debug, verify, batch, ci, release, deslop, refactor, design, browser, spec |
 | Agents | reviewer, security, explorer, librarian, architect, critic, coder, tester, oracle (used by the subagents extension's `task` tool) |
 | Prompts | commit, branch, changelog, amend, diff, pr, explain, document, summarize, types, lint, tests, build, brief, continue, recap |
@@ -67,6 +67,11 @@ All extensions read one file: `~/.pi/agent/piconfig.json` (global), deep-merged 
     "skills": true,
     "exclude": [],
     "theme": ""
+  },
+  "skills": {
+    "global": true,
+    "project": true,
+    "dirs": []
   },
   "permissions": {
     "mode": "ask",
@@ -276,6 +281,7 @@ All extensions read one file: `~/.pi/agent/piconfig.json` (global), deep-merged 
 | Section | Commands | Tools | What it does |
 | --- | --- | --- | --- |
 | loader | /doctor, /setup | — | Discovers the package's skills/prompts/themes, applies excludes, first-run wizard and health check |
+| skills | — | — | Loads Claude Code skills: `~/.claude/skills` globally and `.claude/skills` from the cwd and ancestors up to the git root (trusted projects only); `dirs` adds extra skill directories such as `~/.codex/skills` |
 | subagents | /agents (view, tasks, kill) | task, advisor | Delegation to the nine `agents/*.md` subagents with depth/turn caps (plus an optional cumulative-token spend cap, `maxTokens`, off by default), a live task widget plus `/agents view` viewer with transcripts and kill, and advisor for read-only second opinions |
 | workflows | /workflows (view, show, kill) | workflow | Deterministic JavaScript orchestration scripts (agent/parallel/pipeline fan-out with phases, budgets, and caps, saved under `.pi/workflows/` or `~/.pi/agent/workflows/`) with a live run viewer and background runs (`background: true` returns the run id immediately and delivers the result as a follow-up message, like the task tool); agents run through the subagents runner, sharing its concurrency slots, viewer, and permission bridge |
 | permissions | /permissions, /mode | — | ask/write/yolo modes with allow/deny/ask rules and optional LLM risk judge; subagent tool calls are bridged to the main session for approval (subagentBridge); approval prompts use toolview's scrollable preview when available |
