@@ -47,10 +47,8 @@ function normalizeConfig(raw: Record<string, unknown>): LoaderConfig {
     : [...defaultConfig.exclude]
   return {
     prompts: typeof raw.prompts === "boolean" ? raw.prompts : defaultConfig.prompts,
-    themes: typeof raw.themes === "boolean" ? raw.themes : defaultConfig.themes,
     skills: typeof raw.skills === "boolean" ? raw.skills : defaultConfig.skills,
-    exclude,
-    theme: typeof raw.theme === "string" ? raw.theme : defaultConfig.theme
+    exclude
   }
 }
 
@@ -76,17 +74,8 @@ export function loadConfig(): LoaderConfig {
 
 export default function loader(pi: ExtensionAPI): void {
   pi.on("resources_discover", (): DiscoveredResources => {
-    return discover(resolvePackageRoot(), loadConfig())
-  })
-  pi.on("session_start", (_event, ctx) => {
-    if (!ctx.hasUI) return
-    const theme = loadConfig().theme.trim()
-    if (theme.length === 0) return
-    try {
-      ctx.ui.setTheme(theme)
-    } catch {
-      return
-    }
+    const resources = discover(resolvePackageRoot(), loadConfig())
+    return { promptPaths: resources.promptPaths, skillPaths: resources.skillPaths }
   })
   pi.registerTool({
     name: "skill",

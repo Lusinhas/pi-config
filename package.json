@@ -18,7 +18,7 @@
     ],
     "skills": [],
     "prompts": [],
-    "themes": []
+    "themes": ["./themes"]
   },
   "dependencies": {
     "@ast-grep/napi": "*"

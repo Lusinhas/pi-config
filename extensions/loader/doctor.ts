@@ -122,9 +122,8 @@ export function runDoctor(config: LoaderConfig, ctx: ExtensionCommandContext): v
   }
   if (!config.skills) warnings.push("skill discovery disabled in loader config")
   if (!config.prompts) warnings.push("prompt discovery disabled in loader config")
-  if (!config.themes) warnings.push("theme discovery disabled in loader config")
 
-  const resources = discover(root, { ...config, prompts: true, themes: true, skills: true })
+  const resources = discover(root, { ...config, prompts: true, skills: true })
   const skillPaths = resources.skillPaths ?? []
   const promptPaths = resources.promptPaths ?? []
   const themePaths = resources.themePaths ?? []

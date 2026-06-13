@@ -36,13 +36,13 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
   const target = join(homedir(), ".pi", "agent", "suite.json")
   if (!ctx.hasUI) {
     console.log(
-      `/setup needs the interactive TUI; this session has no UI. Start pi in TUI mode and run /setup again, or edit ${target} by hand using sections "loader" and "permissions".`
+      `/setup needs the interactive TUI; this session has no UI. Start pi in TUI mode and run /setup again, or set "theme" in ~/.pi/agent/settings.json and edit ${target} by hand using section "permissions".`
     )
     return
   }
   const root = resolvePackageRoot()
 
-  let chosenTheme: string | undefined
+  let appliedTheme: string | undefined
   const themes = themeChoices(root, config.exclude)
   if (themes.length > 0) {
     const pick = await ctx.ui.select("Choose a theme", [...themes, "skip"])
@@ -51,11 +51,11 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
       return
     }
     if (pick !== "skip") {
-      chosenTheme = pick
-      try {
-        ctx.ui.setTheme(pick)
-      } catch (err) {
-        ctx.ui.notify(`Theme "${pick}" saved but could not be applied now: ${message(err)}`, "warning")
+      const result = ctx.ui.setTheme(pick)
+      if (result.success) {
+        appliedTheme = pick
+      } else {
+        ctx.ui.notify(`Theme "${pick}" could not be applied: ${result.error ?? "unknown error"}`, "warning")
       }
     }
   } else {
@@ -98,15 +98,12 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
   const next: Record<string, unknown> = { ...existing }
   const written: string[] = []
   const kept: string[] = []
-  if (chosenTheme !== undefined) {
-    const section = isRecord(next.loader) ? { ...next.loader } : {}
-    if (section.theme === chosenTheme) {
-      kept.push(`loader.theme already "${chosenTheme}"`)
-    } else {
-      section.theme = chosenTheme
-      next.loader = section
-      written.push(`loader.theme = "${chosenTheme}"`)
-    }
+  if (isRecord(next.loader) && "theme" in next.loader) {
+    const section = { ...next.loader }
+    delete section.theme
+    if (Object.keys(section).length === 0) delete next.loader
+    else next.loader = section
+    written.push("removed stale loader.theme (the theme now persists in settings.json)")
   }
   if (chosenMode !== undefined) {
     const section = isRecord(next.permissions) ? { ...next.permissions } : {}
@@ -120,7 +117,9 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
   }
 
   if (written.length === 0) {
-    const detail = kept.length > 0 ? ` (${kept.join("; ")})` : ""
+    const notes = [...kept]
+    if (appliedTheme !== undefined) notes.unshift(`theme "${appliedTheme}" applied and saved to settings.json`)
+    const detail = notes.length > 0 ? ` (${notes.join("; ")})` : ""
     ctx.ui.notify(`Nothing to change; ${target} left as is${detail}.`, "info")
     return
   }
@@ -132,6 +131,7 @@ export async function runSetup(config: LoaderConfig, ctx: ExtensionCommandContex
     return
   }
   const lines = [`Setup complete — wrote ${target}`]
+  if (appliedTheme !== undefined) lines.push(`  theme = "${appliedTheme}" (applied and saved to settings.json)`)
   for (const item of written) lines.push(`  ${item}`)
   for (const item of kept) lines.push(`  ${item}`)
   ctx.ui.notify(lines.join("\n"), "info")

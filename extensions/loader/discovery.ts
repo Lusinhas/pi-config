@@ -5,10 +5,8 @@ import { fileURLToPath } from "node:url"
 
 export interface LoaderConfig {
   prompts: boolean
-  themes: boolean
   skills: boolean
   exclude: string[]
-  theme: string
 }
 
 export interface DiscoveredResources {
@@ -19,10 +17,8 @@ export interface DiscoveredResources {
 
 export const defaultConfig: LoaderConfig = {
   prompts: true,
-  themes: true,
   skills: true,
-  exclude: [],
-  theme: ""
+  exclude: []
 }
 
 export function resolvePackageRoot(): string {
@@ -128,9 +124,7 @@ export function discover(root: string, config: LoaderConfig): DiscoveredResource
   if (config.prompts) {
     result.promptPaths = walkFiles(join(root, "prompts"), root, config.exclude, (name) => name.endsWith(".md"))
   }
-  if (config.themes) {
-    result.themePaths = walkFiles(join(root, "themes"), root, config.exclude, (name) => name.endsWith(".json"))
-  }
+  result.themePaths = walkFiles(join(root, "themes"), root, config.exclude, (name) => name.endsWith(".json"))
   if (config.skills) {
     result.skillPaths = walkSkillDirs(join(root, "skills"), root, config.exclude)
   }

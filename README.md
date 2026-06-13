@@ -52,7 +52,7 @@ cp APPEND_SYSTEM.md ~/.pi/agent/APPEND_SYSTEM.md
 
 ## First run: /setup and /doctor
 
-- `/setup` — interactive first-run wizard (TUI only). Picks a theme and a permission mode, then writes the `loader` and `permissions` sections of `~/.pi/agent/suite.json`.
+- `/setup` — interactive first-run wizard (TUI only). Picks a theme (applied immediately and saved to pi's `settings.json`) and a permission mode (written to the `permissions` section of `~/.pi/agent/suite.json`).
 - `/doctor` — health check. Re-runs resource discovery and reports broken skill/prompt/agent frontmatter, invalid theme JSON, name collisions, and config problems with file paths for each finding.
 
 ## Configuration: suite.json
@@ -63,10 +63,8 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
 {
   "loader": {
     "prompts": true,
-    "themes": true,
     "skills": true,
-    "exclude": [],
-    "theme": ""
+    "exclude": []
   },
   "skills": {
     "global": true,
@@ -278,7 +276,7 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
 
 | Section | Commands | Tools | What it does |
 | --- | --- | --- | --- |
-| loader | /doctor, /setup | — | Discovers the package's skills/prompts/themes, applies excludes, first-run wizard and health check |
+| loader | /doctor, /setup | — | Discovers the package's skills/prompts (themes load through the package manifest), applies excludes, first-run wizard and health check |
 | skills | — | — | Loads Claude Code skills: `~/.claude/skills` globally and `.claude/skills` from the cwd and ancestors up to the git root (trusted projects only); `dirs` adds extra skill directories such as `~/.codex/skills` |
 | subagents | /agents (view, tasks, kill) | task, advisor | Delegation to the nine `agents/*.md` subagents with depth/turn caps (plus an optional cumulative-token spend cap, `maxTokens`, off by default), a live task widget plus `/agents view` viewer with transcripts and kill, and advisor for read-only second opinions |
 | workflows | /workflows (view, show, kill) | workflow | Deterministic JavaScript orchestration scripts (agent/parallel/pipeline fan-out with phases, budgets, and caps, saved under `.pi/workflows/` or `~/.pi/agent/workflows/`) with a live run viewer and background runs (`background: true` returns the run id immediately and delivers the result as a follow-up message, like the task tool); agents run through the subagents runner, sharing its concurrency slots, viewer, and permission bridge |

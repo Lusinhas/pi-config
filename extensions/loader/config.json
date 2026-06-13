@@ -1,7 +1,5 @@
 {
   "prompts": true,
-  "themes": true,
   "skills": true,
-  "exclude": [],
-  "theme": ""
+  "exclude": []
 }
