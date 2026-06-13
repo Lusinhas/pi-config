@@ -66,6 +66,18 @@ const DEFAULTS: IdeConfig = {
 
 const MAX_DIFF_BYTES = 4194304;
 
+const SUBAGENT_MARKER_KEY = Symbol.for("piconfig.subagents.marker");
+
+function subagentDepth(): number {
+  const host = globalThis as unknown as Record<symbol, unknown>;
+  const state = host[SUBAGENT_MARKER_KEY];
+  if (state && typeof state === "object" && !Array.isArray(state)) {
+    const depth = (state as Record<string, unknown>).depth;
+    if (typeof depth === "number" && Number.isFinite(depth)) return depth;
+  }
+  return 0;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -195,6 +207,7 @@ function renderDiagnostics(raw: string, cwd: string, cap: number): string {
 }
 
 export default function ide(pi: ExtensionAPI): void {
+  if (subagentDepth() > 0) return;
   const config = loadConfig();
   let bridge: IdeBridge | undefined;
   let connecting = false;
@@ -285,8 +298,19 @@ export default function ide(pi: ExtensionAPI): void {
         onClose: (reason) => {
           bridge = undefined;
           selection = undefined;
+          lastAttempt = 0;
           updateStatus();
-          if (lastCtx !== undefined && lastCtx.hasUI) lastCtx.ui.notify(`IDE bridge disconnected (${reason}).`, "warning");
+          if (lastCtx !== undefined && lastCtx.hasUI) {
+            const recover = config.autoConnect ? "reconnecting on next prompt" : "run /ide connect to reconnect";
+            if (reason === "closed by IDE") {
+              lastCtx.ui.notify(
+                `IDE bridge released: another client connected to the IDE or the window closed; ${recover}.`,
+                "info",
+              );
+            } else {
+              lastCtx.ui.notify(`IDE bridge disconnected (${reason}); ${recover}.`, "warning");
+            }
+          }
         },
       });
       updateStatus();
