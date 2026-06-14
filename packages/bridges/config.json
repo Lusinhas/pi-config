@@ -1,0 +1,79 @@
+{
+  "shell": {
+    "shell": "",
+    "widget": true,
+    "widgetLimit": 6,
+    "sandbox": {
+      "enabled": false,
+      "mode": "loose",
+      "network": "full",
+      "writePaths": [],
+      "escape": true
+    },
+    "jobs": {
+      "autoBackgroundMs": 30000,
+      "capBytes": 2097152,
+      "defaultWaitSec": 30,
+      "keepFinished": 20,
+      "notify": true
+    }
+  },
+  "web": {
+    "numResults": 8,
+    "maxChars": 40000,
+    "cacheTtlMin": 30,
+    "cacheMaxEntries": 200,
+    "timeoutSec": 30,
+    "promptSnippet": true
+  },
+  "mcp": {
+    "servers": {},
+    "lazy": true,
+    "outputLimit": 25600,
+    "inlineLimit": 8192,
+    "requestTimeoutMs": 60000,
+    "startTimeoutMs": 20000,
+    "idleMs": 300000,
+    "authTimeoutMs": 300000,
+    "stderrLines": 20,
+    "framing": "ndjson"
+  },
+  "ide": {
+    "connectionPollMs": 7000,
+    "selectedPreviewMaxChars": 200
+  },
+  "worktrees": {
+    "dir": ".worktrees",
+    "branchPrefix": "wt/",
+    "includeFile": ".worktreeinclude",
+    "defaultRef": "HEAD",
+    "allowSpawn": false,
+    "spawnCommand": "pi",
+    "confirmRemove": true,
+    "maxIncludeFiles": 500,
+    "gitTimeoutMs": 30000
+  },
+  "hooks": {
+    "shell": "/bin/sh",
+    "defaultTimeoutMs": 60000,
+    "eventBudgetMs": 120000,
+    "maxOutputBytes": 16384,
+    "historySize": 50,
+    "monitors": [],
+    "monitorMaxLineLength": 2000,
+    "killGraceMs": 3000,
+    "backoff": {
+      "initialMs": 1000,
+      "maxMs": 30000,
+      "resetAfterMs": 30000
+    }
+  },
+  "artifacts": {
+    "spillBytes": 30720,
+    "headLines": 40,
+    "tailLines": 20,
+    "skipTools": ["artifact"],
+    "maxAgeDays": 7,
+    "retrieveLines": 200
+  }
+}

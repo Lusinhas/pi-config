@@ -1,8 +1,0 @@
-{
-  "numResults": 8,
-  "maxChars": 40000,
-  "cacheTtlMin": 30,
-  "cacheMaxEntries": 200,
-  "timeoutSec": 30,
-  "promptSnippet": true
-}

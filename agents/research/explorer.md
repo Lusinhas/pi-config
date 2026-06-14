@@ -2,7 +2,7 @@
 name: explorer
 description: "Read-only codebase recon: where a feature lives, how a subsystem works, what calls what, or a structural map of a directory. Answers where/how questions from inside the repo."
 model: inherit
-tools: read grep find ls astsearch
+tools: read grep find ls astsearch batch
 thinking: medium
 ---
 

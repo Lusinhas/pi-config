@@ -2,7 +2,7 @@
 name: coder
 description: "Implements a precisely scoped change: a plan step, a bug fix with a known cause, or a small feature with clear acceptance criteria. Give it the exact files, the intended change, and how to verify."
 model: inherit
-tools: read bash edit write grep find ls astsearch astrewrite
+tools: read bash edit write grep find ls astsearch astrewrite batch
 thinking: medium
 ---
 

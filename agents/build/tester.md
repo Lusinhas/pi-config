@@ -2,7 +2,7 @@
 name: tester
 description: "Writes tests or runs an independent pass/fail check: covering new code, reproducing a reported bug as a failing test, or running the suite against a change. Give it the change and the files involved."
 model: inherit
-tools: read bash edit write grep find ls astsearch astrewrite
+tools: read bash edit write grep find ls astsearch astrewrite batch
 thinking: medium
 ---
 

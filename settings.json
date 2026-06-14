@@ -1,5 +1,16 @@
 {
-  "packages": [],
+  "packages": [
+    "./packages/core",
+    "./packages/context",
+    "./packages/editing",
+    "./packages/agents",
+    "./packages/tasks",
+    "./packages/interface",
+    "./packages/guard",
+    "./packages/bridges",
+    "./packages/skills",
+    "./packages/auth"
+  ],
   "theme": "midnight",
   "defaultThinkingLevel": "medium",
   "enableSkillCommands": true,

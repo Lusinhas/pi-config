@@ -1,0 +1,51 @@
+{
+  "name": "idebridge",
+  "displayName": "Pi IDE Bridge",
+  "description": "VS Code companion for Pi: editor context, diagnostics, and diff previews.",
+  "version": "0.3.0",
+  "publisher": "piconfig",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./src/extension/index.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "piconfig.debug",
+        "title": "Pi IDE Bridge: Show Debug Info"
+      },
+      {
+        "command": "piconfig.acceptDiff",
+        "title": "Pi: Accept Diff",
+        "icon": "$(check)"
+      },
+      {
+        "command": "piconfig.rejectDiff",
+        "title": "Pi: Reject Diff",
+        "icon": "$(close)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "piconfig.acceptDiff",
+          "group": "navigation@1",
+          "when": "piconfig.approvalDiffVisible"
+        },
+        {
+          "command": "piconfig.rejectDiff",
+          "group": "navigation@2",
+          "when": "piconfig.approvalDiffVisible"
+        }
+      ]
+    },
+    "keybindings": []
+  }
+}

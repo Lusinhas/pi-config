@@ -1,0 +1,6 @@
+{
+  "batch": {
+    "maxCalls": 32,
+    "tools": ["read", "write", "edit", "grep", "find", "ls", "bash", "todo"]
+  }
+}

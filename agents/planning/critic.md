@@ -2,7 +2,7 @@
 name: critic
 description: "Adversarial review of a plan before implementation: gaps, hidden coupling, missing migrations or tests, absent rollback paths. Pass the full plan text."
 model: inherit
-tools: read grep find ls astsearch
+tools: read grep find ls astsearch batch
 thinking: high
 ---
 

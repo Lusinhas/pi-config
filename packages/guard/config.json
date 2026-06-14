@@ -1,0 +1,84 @@
+{
+  "permissions": {
+    "mode": "ask",
+    "allow": [],
+    "deny": [],
+    "ask": [],
+    "headless": "deny",
+    "readTools": [
+      "read",
+      "grep",
+      "find",
+      "ls",
+      "artifact",
+      "advisor",
+      "ask",
+      "todo",
+      "astsearch",
+      "history"
+    ],
+    "writeTools": [
+      "write",
+      "edit",
+      "bash"
+    ],
+    "bashTools": [
+      "bash"
+    ],
+    "pathTools": [
+      "read",
+      "write",
+      "edit",
+      "ls"
+    ],
+    "previewLength": 160,
+    "judge": {
+      "enabled": false,
+      "model": "anthropic/claude-haiku-4-5",
+      "maxRisk": "safe",
+      "timeoutMs": 20000,
+      "maxTokens": 200
+    },
+    "subagentBridge": true
+  },
+  "checkpoint": {
+    "maxMb": 200,
+    "maxAgeDays": 30,
+    "labelMaxChars": 64,
+    "maxFileMb": 25,
+    "maxBashFiles": 20,
+    "maxCheckpointFiles": 500,
+    "confirmListLimit": 20,
+    "bashPatterns": [
+      "\\brm\\s",
+      "\\bmv\\s",
+      "\\bcp\\s",
+      "\\bln\\s",
+      "\\btouch\\s",
+      "\\bmkdir\\s",
+      "\\brmdir\\s",
+      "\\btruncate\\s",
+      "\\btee\\b",
+      "\\bdd\\s",
+      "\\bpatch\\b",
+      "\\brsync\\s",
+      "\\bunzip\\s",
+      "\\btar\\s+[^|;]*x",
+      ">{1,2}",
+      "\\bsed\\b[^|;]*\\s(-i|--in-place)",
+      "\\bchmod\\s",
+      "\\bchown\\s",
+      "\\bgit\\s+(checkout|restore|reset|clean|stash|apply|am|merge|rebase|cherry-pick|revert|pull|mv|rm)\\b",
+      "\\bnpm\\s+(install|ci|uninstall|update|prune|dedupe)\\b",
+      "\\bpnpm\\s+(install|add|remove|update|prune)\\b",
+      "\\byarn\\s+(install|add|remove|upgrade)\\b",
+      "\\bbun\\s+(install|add|remove|update)\\b",
+      "\\bprettier\\b[^|;]*\\s(--write|-w)\\b",
+      "\\beslint\\b[^|;]*\\s--fix\\b",
+      "\\bblack\\s",
+      "\\bruff\\s+(format|check\\b[^|;]*--fix)",
+      "\\bgofmt\\s+[^|;]*-w\\b",
+      "\\bcargo\\s+fmt\\b"
+    ]
+  }
+}

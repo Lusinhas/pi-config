@@ -1,0 +1,40 @@
+{
+  "subagents": {
+    "maxConcurrent": 4,
+    "maxDepth": 2,
+    "maxTokens": 0,
+    "advisorModel": "",
+    "advisorThinking": "xhigh",
+    "advisorContextChars": 60000,
+    "widget": true,
+    "widgetLimit": 4,
+    "transcriptLimit": 60,
+    "activityChars": 100,
+    "keepFinished": 20,
+    "teams": {
+      "whitebox-pentest": {
+        "members": [
+          "security-attack-surface",
+          "security-vuln-tracer",
+          "security-pentest-runner",
+          "security-reporter"
+        ],
+        "brief": "Authorized white-box pentest fanout. Stay within the user's scope and your agent specialty; return concise evidence-backed results with file:line citations. Do not edit files. The runner must perform active checks only against explicitly authorized local or named targets."
+      }
+    }
+  },
+  "workflows": {
+    "timeoutSec": 1800,
+    "maxAgents": 250
+  },
+  "goals": {
+    "judgeModel": "anthropic/claude-haiku-4-5",
+    "judgeTimeoutMs": 30000,
+    "judgeMaxChars": 8000,
+    "metMarker": "<goal-met/>",
+    "maxIterations": 25,
+    "enforceTodos": false,
+    "loopMinIntervalMs": 5000,
+    "statusMaxChars": 48
+  }
+}

@@ -6,7 +6,7 @@
     "blue": "#4a6fa5",
     "blueDeep": "#3a5a8c",
     "gray": "#6e6759",
-    "grayDim": "#9c9484",
+    "grayDim": "#888070",
     "green": "#3e7a4e",
     "red": "#b3413c",
     "gold": "#a06a1f",
@@ -64,10 +64,10 @@
     "syntaxOperator": "#5c5448",
     "syntaxPunctuation": "#7c7466",
     "thinkingOff": "grayDim",
-    "thinkingMinimal": "#8e8a8c",
-    "thinkingLow": "#7e8393",
-    "thinkingMedium": "#6c7d9a",
-    "thinkingHigh": "#5b76a0",
+    "thinkingMinimal": "#7c8088",
+    "thinkingLow": "#717c93",
+    "thinkingMedium": "#63789b",
+    "thinkingHigh": "#5573a1",
     "thinkingXhigh": "blue",
     "bashMode": "plum"
   }

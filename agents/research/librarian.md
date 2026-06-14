@@ -2,7 +2,7 @@
 name: librarian
 description: "Answers questions from documentation or the web rather than the repo: library APIs, version differences, framework behavior, error messages, release notes, or verifying external claims."
 model: inherit
-tools: read websearch webfetch
+tools: read websearch webfetch batch
 thinking: medium
 ---
 

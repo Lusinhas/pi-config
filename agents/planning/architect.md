@@ -2,7 +2,7 @@
 name: architect
 description: "Plans work too large or risky to implement directly: multi-file features, refactors, migrations, API changes, or anything with unclear ordering or blast radius. Produces the plan; does not implement."
 model: inherit
-tools: read grep find ls astsearch
+tools: read grep find ls astsearch batch
 thinking: xhigh
 ---
 

@@ -2,7 +2,7 @@
 name: reviewer
 description: "Correctness review of written or changed code before merge or ship: after a coder task, before committing a risky diff, or on request for specific files, a branch, or a feature."
 model: inherit
-tools: read grep find ls astsearch
+tools: read grep find ls astsearch batch
 thinking: high
 ---
 

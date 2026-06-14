@@ -2,7 +2,7 @@
 name: oracle
 description: "Second opinion when the lead is stuck or facing an expensive judgment call: debugging in circles, unclear architecture tradeoffs, a failure that resists explanation. Pass the full context gathered so far."
 model: inherit
-tools: read grep find ls
+tools: read grep find ls batch
 thinking: xhigh
 ---
 

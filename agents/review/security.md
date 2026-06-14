@@ -2,7 +2,7 @@
 name: security
 description: "Security audit for code touching a trust boundary: user input, auth, sessions, file paths, shell, SQL, deserialization, secrets, network, or any endpoint about to ship."
 model: inherit
-tools: read grep find ls astsearch
+tools: read grep find ls astsearch batch
 thinking: high
 ---
 

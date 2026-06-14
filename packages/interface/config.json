@@ -1,0 +1,42 @@
+{
+  "statusline": {
+    "order": ["model", "mode", "role", "git", "context", "ide", "usage", "todos", "cwd", "clock"],
+    "separator": " │ ",
+    "segments": {
+      "model": { "enabled": true },
+      "mode": { "enabled": true },
+      "role": { "enabled": true },
+      "git": { "enabled": true },
+      "context": { "enabled": true },
+      "ide": { "enabled": true },
+      "usage": { "enabled": true },
+      "todos": { "enabled": true },
+      "cwd": { "enabled": true },
+      "clock": { "enabled": true }
+    },
+    "gitIntervalMs": 5000,
+    "gitTimeoutMs": 3000,
+    "refreshMs": 30000,
+    "warnPercent": 80,
+    "errorPercent": 95
+  },
+  "toolview": {
+    "maxLines": 12,
+    "maxLineChars": 160,
+    "compactChars": 100,
+    "viewportLines": 16
+  },
+  "styles": {
+    "active": "default",
+    "userDir": "~/.pi/agent/styles"
+  },
+  "usage": {
+    "statsDays": 30,
+    "costDecimals": 4
+  },
+  "ask": {
+    "defaultTimeoutSec": 0,
+    "otherLabel": "Other (type a custom answer)",
+    "doneLabel": "Done"
+  }
+}

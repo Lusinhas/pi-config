@@ -1,0 +1,6 @@
+{
+  "auth": {
+    "enabled": false,
+    "longContext": false
+  }
+}

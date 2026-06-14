@@ -1,0 +1,27 @@
+{
+  "name": "pi-config-core",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "pi": {
+    "extensions": [
+      "./src/extension/index.ts"
+    ],
+    "prompts": [
+      "../../prompts/**/*.md"
+    ],
+    "skills": [
+      "../../skills/**/*.md"
+    ],
+    "themes": [
+      "../../themes/**/*.json"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-agent-core": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
+  }
+}

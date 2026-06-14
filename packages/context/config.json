@@ -1,0 +1,49 @@
+{
+  "memory": {
+    "injectBudget": 2000,
+    "consolidateEvery": 0,
+    "consolidateOnQuit": true,
+    "model": "",
+    "maxFacts": 3,
+    "recallBudget": 6000,
+    "maxTopicBytes": 65536,
+    "transcriptBudget": 12000
+  },
+  "compaction": {
+    "strategy": "supersede",
+    "dropOverBytes": 20480,
+    "keepRecentTokens": 20000,
+    "preemptPct": 85,
+    "promotePct": 90,
+    "shakeOverBytes": 10240,
+    "handoffPath": ".pi/handoff.md",
+    "handoffChars": 60000,
+    "handoffMaxTokens": 4096,
+    "promotion": {
+      "enabled": true,
+      "ladder": []
+    }
+  },
+  "sessions": {
+    "listLimit": 20,
+    "readLimit": 60,
+    "searchLimit": 50,
+    "excerptChars": 160,
+    "contextEntries": 3,
+    "allowSwitch": false,
+    "btwBudget": 12000,
+    "btwMaxTokens": 4096
+  },
+  "rules": {
+    "formats": {
+      "pi": true,
+      "claude": true,
+      "cursor": true,
+      "copilot": true,
+      "windsurf": true,
+      "cline": true
+    },
+    "alwaysBudget": 8000,
+    "scopedBudget": 6000
+  }
+}

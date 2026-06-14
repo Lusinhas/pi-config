@@ -1,16 +1,19 @@
 # pi-config
 
-A batteries-included configuration suite for the [pi](https://pi.dev) coding agent: 30 extensions, 24 skills, 9 subagent definitions, 16 prompt templates, and 5 themes in a single package. It ports the workflows people miss from Claude Code, Codex, oh-my-pi, and oh-my-openagent — plan mode, permissions, subagents, todos, checkpoints, memory, MCP, hooks, web access, the VS Code IDE bridge, AST-aware editing, and more — onto upstream pi.
+A batteries-included configuration suite for the [pi](https://pi.dev) coding agent: the capabilities of ~30 classic extensions consolidated into **10 domain extensions**, plus 27 skills, 13 subagent definitions, 16 prompt templates, 5 themes, and a VS Code companion. It ports the workflows people miss from Claude Code, Codex, oh-my-pi, and oh-my-openagent — plan mode, permissions, subagents, todos, checkpoints, memory, MCP, hooks, web access, the VS Code IDE bridge, AST-aware editing, and more — onto upstream pi.
+
+The repository root is not a Pi package. Each domain extension is an independent package under `packages/<domain>/`, with its entrypoint at `src/extension/index.ts`, its `config.json` at the package root, pi-free logic in `src/<concern>/` folders, and tests. The suite's resources live at the repo root (`agents/`, `skills/`, `prompts/`, `themes/`) and are registered explicitly through the `packages/core` manifest; the subagent definitions under `agents/` are loaded by the `agents` extension.
 
 ## What's inside
 
 | Category | Contents |
 | --- | --- |
-| Extensions | loader, skills, subagents, workflows, permissions, toolview, hooks, plan, todos, goals, memory, checkpoint, compaction, rules, statusline, usage, mcp, artifacts, comments, hashline, ask, keywords, worktrees, shell, web, ide, astgrep, sessions, styles, router |
-| Skills | commit, rebase, pr, conflicts, code, security, simplify, unit, integration, coverage, deep, codebase, init, deepinit, debug, verify, batch, ci, release, deslop, refactor, design, browser, spec |
-| Agents | reviewer, security, explorer, librarian, architect, critic, coder, tester, oracle (used by the subagents extension's `task` tool) |
+| Extensions (10 domains) | **core** (loader, router, resource registration) · **context** (memory, compaction, sessions, rules) · **editing** (hashline, astgrep, comments) · **agents** (subagents, workflows, goals) · **tasks** (todos, plan, keywords) · **interface** (statusline, toolview, styles, usage, ask) · **guard** (permissions, checkpoint) · **bridges** (shell, web, mcp, ide, worktrees, hooks, artifacts) · **skills** (external Claude Code skill loading) · **auth** (Anthropic subscription/OAuth provider) |
+| Skills | commit, rebase, pr, conflicts, code, security, simplify, unit, integration, coverage, deep, codebase, init, deepinit, debug, verify, batch, ci, release, deslop, refactor, design, browser, spec, threatmodel, whiteboxpentest, secretsresponse |
+| Agents | reviewer, security, explorer, librarian, architect, critic, coder, tester, oracle, attacksurface, vulntracer, pentestrunner, reporter (used by the `agents` extension's `task` tool) |
 | Prompts | commit, branch, changelog, amend, diff, pr, explain, document, summarize, types, lint, tests, build, brief, continue, recap |
 | Themes | midnight, ember, abyss (dark); paper, dawn (light) |
+| Companion | `companion/` — the "idebridge" VS Code extension powering the `bridges/ide` editor context, diagnostics, and diff previews |
 
 ## Install
 
@@ -22,19 +25,34 @@ cd pi-config
 ./setup.sh
 ```
 
-`setup.sh` installs the package dependencies, registers the package in `~/.pi/agent/settings.json`, copies the `AGENTS.md` and `APPEND_SYSTEM.md` templates into place (existing files are left untouched), and runs `/doctor` to verify the load.
+`setup.sh` copies the entire suite into `~/.pi/agent` — `packages/`, `agents/`, `skills/`, `prompts/`, `themes/`, the VS Code `companion/`, and the `AGENTS.md`/`SYSTEM.md` templates — then installs each package's dependencies there, writes `~/.pi/agent/settings.json` with the `packages` array pointing at `~/.pi/agent/packages/*` (any existing `settings.json` is backed up to `settings.json.bak`), installs the IDE-bridge companion into your editor (see [IDE bridge](#ide-bridge)), creates an empty `suite.json` if missing, and runs `/doctor`. Because everything lives under `~/.pi/agent` afterward, the clone is no longer referenced and can be deleted. (`PI_CODING_AGENT_DIR` overrides the target dir.)
 
 ### Manual install
 
-If you would rather not run the script, add the cloned directory to the `packages` array in your settings (`~/.pi/agent/settings.json` for all projects, `.pi/settings.json` per project):
+If you would rather not run the script, copy the suite into your agent dir, install each package's dependencies there, and point your settings at the moved packages:
+
+```sh
+mkdir -p ~/.pi/agent
+cp -R packages agents skills prompts themes companion AGENTS.md SYSTEM.md ~/.pi/agent/
+for d in ~/.pi/agent/packages/*/; do npm install --omit=dev --prefix "$d"; done
+```
 
 ```json
 {
-  "packages": ["~/pi-config"]
+  "packages": [
+    "~/.pi/agent/packages/core", "~/.pi/agent/packages/context", "~/.pi/agent/packages/editing",
+    "~/.pi/agent/packages/agents", "~/.pi/agent/packages/tasks", "~/.pi/agent/packages/interface",
+    "~/.pi/agent/packages/guard", "~/.pi/agent/packages/bridges", "~/.pi/agent/packages/skills",
+    "~/.pi/agent/packages/auth"
+  ]
 }
 ```
 
-Then install the extension dependencies (such as `@ast-grep/napi`) once with `npm install` (or `bun install`) in the cloned directory. Extensions, skills, prompts, and themes are discovered automatically.
+(`~/.pi/agent/settings.json` for all projects, `.pi/settings.json` per project.) Each package's manifest registers its own extension; `packages/core` additionally registers the `prompts/`, `skills/`, and `themes/` resources sitting next to it. There is no conventional-directory auto-discovery.
+
+### IDE bridge
+
+`setup.sh` also installs the `companion/` extension ("pi-config IDE Bridge") into every VS Code-family editor it finds (`~/.vscode`, `~/.vscode-oss`/VSCodium, `~/.cursor`, `~/.windsurf`, and Flatpak variants) by copying it into the editor's `extensions/` directory **and registering it in that directory's `extensions.json`** — modern VS Code/VSCodium only loads extensions listed there, so a bare folder copy is silently ignored. Reload your editor window after setup, then run `/ide status` inside pi to confirm the connection. You can re-run the install at any time from inside pi with `/ide install`.
 
 ## Copy-in templates
 
@@ -43,12 +61,12 @@ Two files in this repo are templates, not package resources — pi only reads th
 ```sh
 mkdir -p ~/.pi/agent
 cp AGENTS.md ~/.pi/agent/AGENTS.md
-cp APPEND_SYSTEM.md ~/.pi/agent/APPEND_SYSTEM.md
+cp SYSTEM.md ~/.pi/agent/SYSTEM.md
 ```
 
 - `AGENTS.md` — operational guide the agent reads as native context. Global at `~/.pi/agent/AGENTS.md`, or place a copy at a repo root for per-project context (pi walks up from the cwd).
-- `APPEND_SYSTEM.md` — behavioral addendum appended to pi's system prompt. Lives at `~/.pi/agent/APPEND_SYSTEM.md`, or `.pi/APPEND_SYSTEM.md` inside a project.
-- `settings.json` — there is no shipped template; just add the `packages` entry shown above to your existing settings file (create it with `{}` plus the entry if it does not exist).
+- `SYSTEM.md` — behavioral addendum appended to pi's system prompt. Lives at `~/.pi/agent/SYSTEM.md`.
+- `settings.json` — `setup.sh` writes `~/.pi/agent/settings.json` from the repo's `settings.json` with the `packages` array pointed at `~/.pi/agent/packages/*` (any existing one is backed up to `settings.json.bak`).
 
 ## First run: /setup and /doctor
 
@@ -71,6 +89,10 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
     "project": true,
     "dirs": []
   },
+  "auth": {
+    "enabled": false,
+    "longContext": false
+  },
   "permissions": {
     "mode": "ask",
     "allow": [],
@@ -78,6 +100,7 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
     "ask": [],
     "headless": "deny",
     "subagentBridge": true,
+    "ideDiff": true,
     "judge": { "enabled": false, "model": "anthropic/claude-haiku-4-5", "maxRisk": "safe" }
   },
   "toolview": {
@@ -108,7 +131,6 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
   "subagents": {
     "maxConcurrent": 4,
     "maxDepth": 2,
-    "maxTurns": 32,
     "maxTokens": 0,
     "advisorModel": "",
     "advisorThinking": "xhigh",
@@ -278,10 +300,11 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
 | --- | --- | --- | --- |
 | loader | /doctor, /setup | — | Discovers the package's skills/prompts (themes load through the package manifest), applies excludes, first-run wizard and health check |
 | skills | — | — | Loads Claude Code skills: `~/.claude/skills` globally and `.claude/skills` from the cwd and ancestors up to the git root (trusted projects only); `dirs` adds extra skill directories such as `~/.codex/skills` |
-| subagents | /agents (view, tasks, kill) | task, advisor | Delegation to the nine `agents/*.md` subagents with depth/turn caps (plus an optional cumulative-token spend cap, `maxTokens`, off by default), a live task widget plus `/agents view` viewer with transcripts and kill, and advisor for read-only second opinions |
-| workflows | /workflows (view, show, kill) | workflow | Deterministic JavaScript orchestration scripts (agent/parallel/pipeline fan-out with phases, budgets, and caps, saved under `.pi/workflows/` or `~/.pi/agent/workflows/`) with a live run viewer and background runs (`background: true` returns the run id immediately and delivers the result as a follow-up message, like the task tool); agents run through the subagents runner, sharing its concurrency slots, viewer, and permission bridge |
-| permissions | /permissions, /mode | — | ask/write/yolo modes with allow/deny/ask rules and optional LLM risk judge; subagent tool calls are bridged to the main session for approval (subagentBridge); approval prompts use toolview's scrollable preview when available |
-| toolview | — | — | Human-readable tool-call previews (bash commands, edit diffs, write contents, paths) instead of raw JSON, with a scrollable approval dialog (PgUp/PgDn) used by the permissions extension and compact previews for subagent activity lines; other extensions can register per-tool renderers via the `piconfig.toolview` global registry |
+| auth | — | — | Optional Claude Code-style Anthropic provider (off by default — set `enabled`): registers a model provider that signs requests with stored subscription/OAuth credentials (auto-refreshed), a Claude-Code billing transform, and a model catalog, with streaming and an optional `longContext` mode |
+| subagents | /agents (view, tasks, kill) | task, advisor | Delegation to the 13 `agents/*.md` subagents with a depth cap and an optional per-agent token cap (`maxTokens`, off by default); subagents run to completion with no turn cap (like Claude Code), and token accounting counts new work (input + output + cache writes), excluding cache reads. Live task widget (activity lines sized to the terminal width) plus `/agents view` viewer with transcripts and kill, and advisor for read-only second opinions |
+| workflows | /workflows (view, show, kill) | workflow | Deterministic JavaScript orchestration scripts (agent/parallel/pipeline fan-out with phases, budgets, and caps, saved under `.pi/workflows/` or `~/.pi/agent/workflows/`) with a live run viewer and background runs (`background: true` returns the run id immediately and delivers the result as a follow-up message, like the task tool). The workflow tool accepts per-run `maxTokens` (per-agent token ceiling) and `maxAgents` overrides set at launch; agents run through the subagents runner, sharing its concurrency slots, viewer, and permission bridge |
+| permissions | /permissions, /mode | — | ask/write/yolo modes with allow/deny/ask rules and optional LLM risk judge; subagent tool calls are bridged to the main session for approval (subagentBridge); approval prompts use toolview's scrollable preview when available. When the IDE bridge is connected, edit/write approvals (in ask mode) open an editable diff in VS Code — Accept/Reject is the decision and hand-edits are written back (`ideDiff`, on by default; falls back to the terminal prompt when no IDE is connected) |
+| toolview | — | — | Human-readable tool-call previews (bash commands, edit diffs, write contents, paths) instead of raw JSON, sized to the terminal width with `maxLineChars`/`compactChars` as fallbacks when the width is unknown, with a scrollable approval dialog (PgUp/PgDn) used by the permissions extension and compact previews for subagent activity lines; other extensions can register per-tool renderers via the `piconfig.toolview` global registry |
 | hooks | /hooks | — | Claude-compatible lifecycle command hooks from `~/.pi/agent/hooks.json` and `.pi/hooks.json`, plus background monitors |
 | plan | /plan | — | Read-only plan mode: blocks mutating tools, reviews the presented plan, approve/refine flow |
 | todos | /todos | todo | Persistent todo list with widget, context injection, and a `piconfig:todos` bus feed; mirrors live under `~/.pi/agent/todos/`, never inside the project |
@@ -299,9 +322,9 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
 | ask | — | ask | Structured multiple-choice questions to the user with optional free-text and timeout |
 | keywords | /keywords | — | Thinking-level trigger words (ultrathink, quickthink, ...), orchestrate/ultrawork modes |
 | worktrees | /worktree | — | Git worktree lifecycle under `.worktrees/` with branch prefixes and include-file copying |
-| shell | /jobs, /sandbox | bash (override), jobs | Bash with auto-backgrounding after 30s, job control, output caps, optional sandbox |
+| shell | /jobs, /sandbox | bash (override), jobs | Commands run under bash explicitly (not the user's `$SHELL`); supported commands (git, cargo, npm, pytest, docker, …) are routed through `rtk` (Rust Token Killer) to compact output when it is on PATH, falling back to plain bash otherwise. Auto-backgrounding after 30s, job control, output caps, optional sandbox |
 | web | — | websearch, webfetch | search plus page fetch via Parallel's Search MCP server (search.parallel.ai, free, no API key) with caching, size limits, and a direct-fetch fallback |
-| ide | /ide | idediagnostics | Claude Code-compatible VS Code bridge: discovers the Claude Code extension's lock files (`~/.claude/ide`), connects to its WebSocket MCP server, injects the live editor selection as context each turn, pastes IDE at-mentions into the input, opens native diff tabs after every edit/write, and serves language diagnostics to the model without a build |
+| ide | /ide | idediagnostics | Claude Code-compatible VS Code bridge: discovers the Claude Code extension's lock files (`~/.claude/ide`), connects to its WebSocket MCP server, injects the live editor selection as context each turn, pastes IDE at-mentions into the input, opens native diff tabs after every edit/write, gates edit/write approvals through an editable Accept/Reject diff when `permissions.ideDiff` is on, and serves language diagnostics to the model without a build |
 | astgrep | — | astsearch, astrewrite | ast-grep structural search and staged, preview-first structural rewrites |
 | sessions | /search, /btw | history | Search and read past session transcripts; `/btw` asks a side question with session context |
 | styles | /style | — | Output styles appended to the system prompt, user-defined styles in `~/.pi/agent/styles` |
