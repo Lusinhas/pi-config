@@ -8,6 +8,7 @@
     "./packages/interface",
     "./packages/guard",
     "./packages/bridges",
+    "./packages/batch",
     "./packages/skills",
     "./packages/auth"
   ],

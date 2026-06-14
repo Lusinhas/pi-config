@@ -1,6 +1,6 @@
 # pi-config
 
-A batteries-included configuration suite for the [pi](https://pi.dev) coding agent: the capabilities of ~30 classic extensions consolidated into **10 domain extensions**, plus 27 skills, 13 subagent definitions, 16 prompt templates, 5 themes, and a VS Code companion. It ports the workflows people miss from Claude Code, Codex, oh-my-pi, and oh-my-openagent — plan mode, permissions, subagents, todos, checkpoints, memory, MCP, hooks, web access, the VS Code IDE bridge, AST-aware editing, and more — onto upstream pi.
+A batteries-included configuration suite for the [pi](https://pi.dev) coding agent: the capabilities of ~30 classic extensions consolidated into **11 domain extensions**, plus 27 skills, 13 subagent definitions, 16 prompt templates, 5 themes, and a VS Code companion. It ports the workflows people miss from Claude Code, Codex, oh-my-pi, and oh-my-openagent — plan mode, permissions, subagents, todos, checkpoints, memory, MCP, hooks, web access, the VS Code IDE bridge, AST-aware editing, batched tool calls, and more — onto upstream pi.
 
 The repository root is not a Pi package. Each domain extension is an independent package under `packages/<domain>/`, with its entrypoint at `src/extension/index.ts`, its `config.json` at the package root, pi-free logic in `src/<concern>/` folders, and tests. The suite's resources live at the repo root (`agents/`, `skills/`, `prompts/`, `themes/`) and are registered explicitly through the `packages/core` manifest; the subagent definitions under `agents/` are loaded by the `agents` extension.
 
@@ -8,7 +8,7 @@ The repository root is not a Pi package. Each domain extension is an independent
 
 | Category | Contents |
 | --- | --- |
-| Extensions (10 domains) | **core** (loader, router, resource registration) · **context** (memory, compaction, sessions, rules) · **editing** (hashline, astgrep, comments) · **agents** (subagents, workflows, goals) · **tasks** (todos, plan, keywords) · **interface** (statusline, toolview, styles, usage, ask) · **guard** (permissions, checkpoint) · **bridges** (shell, web, mcp, ide, worktrees, hooks, artifacts) · **skills** (external Claude Code skill loading) · **auth** (Anthropic subscription/OAuth provider) |
+| Extensions (11 domains) | **core** (loader, router, resource registration) · **context** (memory, compaction, sessions, rules) · **editing** (hashline, astgrep, comments) · **agents** (subagents, workflows, goals) · **tasks** (todos, plan, keywords) · **interface** (statusline, toolview, styles, usage, ask) · **guard** (permissions, checkpoint) · **bridges** (shell, web, mcp, ide, worktrees, hooks, artifacts) · **batch** (multi-tool batch dispatch) · **skills** (external Claude Code skill loading) · **auth** (Anthropic subscription/OAuth provider) |
 | Skills | commit, rebase, pr, conflicts, code, security, simplify, unit, integration, coverage, deep, codebase, init, deepinit, debug, verify, batch, ci, release, deslop, refactor, design, browser, spec, threatmodel, whiteboxpentest, secretsresponse |
 | Agents | reviewer, security, explorer, librarian, architect, critic, coder, tester, oracle, attacksurface, vulntracer, pentestrunner, reporter (used by the `agents` extension's `task` tool) |
 | Prompts | commit, branch, changelog, amend, diff, pr, explain, document, summarize, types, lint, tests, build, brief, continue, recap |
@@ -42,7 +42,8 @@ for d in ~/.pi/agent/packages/*/; do npm install --omit=dev --prefix "$d"; done
   "packages": [
     "~/.pi/agent/packages/core", "~/.pi/agent/packages/context", "~/.pi/agent/packages/editing",
     "~/.pi/agent/packages/agents", "~/.pi/agent/packages/tasks", "~/.pi/agent/packages/interface",
-    "~/.pi/agent/packages/guard", "~/.pi/agent/packages/bridges", "~/.pi/agent/packages/skills",
+    "~/.pi/agent/packages/guard", "~/.pi/agent/packages/bridges", "~/.pi/agent/packages/batch",
+    "~/.pi/agent/packages/skills",
     "~/.pi/agent/packages/auth"
   ]
 }
@@ -75,7 +76,7 @@ cp SYSTEM.md ~/.pi/agent/SYSTEM.md
 
 ## Configuration: suite.json
 
-All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged with `.pi/suite.json` (project wins). Every top-level key is an extension section and every key inside it is optional — omitted keys keep the shipped defaults, which live in each extension's `extensions/<name>/config.json`. The example below shows every section with its most useful keys at their default values (except `mcp.servers`, which shows the entry shape; long default lists such as `checkpoint.bashPatterns`, `comments.ignore`, and `astgrep.protectGlobs`/`langMap` are omitted — see the respective `config.json`).
+All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged with `.pi/suite.json` (project wins). Every top-level key is an extension section and every key inside it is optional — omitted keys keep the shipped defaults, which live in each package's `packages/<domain>/config.json`. The example below shows every section with its most useful keys at their default values (except `mcp.servers`, which shows the entry shape; long default lists such as `checkpoint.bashPatterns`, `comments.ignore`, and `astgrep.protectGlobs`/`langMap` are omitted — see the respective `config.json`).
 
 ```json
 {
@@ -83,6 +84,10 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
     "prompts": true,
     "skills": true,
     "exclude": []
+  },
+  "batch": {
+    "maxCalls": 32,
+    "tools": ["read", "write", "edit", "grep", "find", "ls", "bash", "todo"]
   },
   "skills": {
     "global": true,
@@ -300,6 +305,7 @@ All extensions read one file: `~/.pi/agent/suite.json` (global), deep-merged wit
 | --- | --- | --- | --- |
 | loader | /doctor, /setup | — | Discovers the package's skills/prompts (themes load through the package manifest), applies excludes, first-run wizard and health check |
 | skills | — | — | Loads Claude Code skills: `~/.claude/skills` globally and `.claude/skills` from the cwd and ancestors up to the git root (trusted projects only); `dirs` adds extra skill directories such as `~/.codex/skills` |
+| batch | — | batch | Runs several tool calls in one request, each authorized individually by the permission system; `maxCalls` caps the batch size and `tools` allowlists the batchable tools (read, write, edit, grep, find, ls, bash, todo) |
 | auth | — | — | Optional Claude Code-style Anthropic provider (off by default — set `enabled`): registers a model provider that signs requests with stored subscription/OAuth credentials (auto-refreshed), a Claude-Code billing transform, and a model catalog, with streaming and an optional `longContext` mode |
 | subagents | /agents (view, tasks, kill) | task, advisor | Delegation to the 13 `agents/*.md` subagents with a depth cap and an optional per-agent token cap (`maxTokens`, off by default); subagents run to completion with no turn cap (like Claude Code), and token accounting counts new work (input + output + cache writes), excluding cache reads. Live task widget (activity lines sized to the terminal width) plus `/agents view` viewer with transcripts and kill, and advisor for read-only second opinions |
 | workflows | /workflows (view, show, kill) | workflow | Deterministic JavaScript orchestration scripts (agent/parallel/pipeline fan-out with phases, budgets, and caps, saved under `.pi/workflows/` or `~/.pi/agent/workflows/`) with a live run viewer and background runs (`background: true` returns the run id immediately and delivers the result as a follow-up message, like the task tool). The workflow tool accepts per-run `maxTokens` (per-agent token ceiling) and `maxAgents` overrides set at launch; agents run through the subagents runner, sharing its concurrency slots, viewer, and permission bridge |
